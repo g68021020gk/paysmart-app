@@ -22,21 +22,37 @@
         <section class="dashboard">
             <div class="card">
                 <h3>My Wallet</h3>
-                <p>₹ 0.00</p>
+                <p id="wallet">₹0.00</p>
             </div>
 
             <div class="card">
                 <h3>Total Expenses</h3>
-                <p>₹ 0.00</p>
+                <p id="expenses">₹0.00</p>
             </div>
         </section>
 
         <section class="actions">
-            <button onclick="openScanner()">Scan QR</button>
-            <button>Send Money</button>
-            <button>Transactions</button>
-            <button>Expense Tracker</button>
+<button onclick="openScanner()">Scan QR</button>
+
+<button onclick="sendMoney()">Send Money</button>
+
+<button onclick="showTransactions()">Transactions</button>
+
+<button onclick="showExpenses()">Expense Tracker</button>
         </section>
+    <section id="scannerSection" style="display:none;">
+    <h2>QR Scanner</h2>
+    <div id="reader"></div>
+    <p id="scanResult">Scan a test QR code.</p>
+    <button onclick="stopScanner()">Close Scanner</button>
+</section>
+
+<section id="transactionSection">
+    <h2>Transaction History</h2>
+    <div id="transactionList">
+        No transactions yet.
+    </div>
+</section>
     </main>
 <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="script.js"></script>
