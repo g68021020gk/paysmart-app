@@ -1,29 +1,17 @@
 
 let walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
 let totalExpenses = Number(localStorage.getItem("totalExpenses")) || 0;
-
-let transactions = JSON.parse(
-    localStorage.getItem("transactions") || "[]"
-);
-
-let expenses = JSON.parse(
-    localStorage.getItem("expenses") || "[]"
-);
-
+let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
 let qrScanner = null;
-let scannerBusy = false;
 
 function updateDashboard() {
-    document.getElementById("wallet").textContent =
-        "₹" + walletBalance.toFixed(2);
-
-    document.getElementById("expenses").textContent =
-        "₹" + totalExpenses.toFixed(2);
+    document.getElementById("wallet").textContent = "₹" + walletBalance.toFixed(2);
+    document.getElementById("expenses").textContent = "₹" + totalExpenses.toFixed(2);
 }
 
 function sendMoney() {
     let name = prompt("Enter receiver name for demo:");
-
     if (!name) return;
 
     let amount = Number(prompt("Enter demo amount:"));
@@ -38,38 +26,25 @@ function sendMoney() {
         return;
     }
 
-    if (!confirm("Confirm demo transaction of ₹" + amount + "?")) {
-        return;
-    }
+    if (!confirm("Confirm demo transaction of ₹" + amount + "?")) return;
 
     walletBalance -= amount;
 
-    let transaction = {
+    transactions.push({
         name: name,
         amount: amount,
         date: new Date().toLocaleString()
-    };
+    });
 
-    transactions.push(transaction);
-
-    localStorage.setItem(
-        "transactions",
-        JSON.stringify(transactions)
-    );
-
-    localStorage.setItem(
-        "walletBalance",
-        walletBalance
-    );
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+    localStorage.setItem("walletBalance", walletBalance);
 
     updateDashboard();
-
     alert("Demo transaction completed!");
 }
 
 function showTransactions() {
     let list = document.getElementById("transactionList");
-
     list.innerHTML = "";
 
     if (transactions.length === 0) {
@@ -79,19 +54,13 @@ function showTransactions() {
 
     transactions.forEach(function(item) {
         let entry = document.createElement("p");
-
-        entry.textContent =
-            item.name + " - ₹" +
-            item.amount + " - " + item.date;
-
+        entry.textContent = item.name + " - ₹" + item.amount + " - " + item.date;
         list.appendChild(entry);
     });
 }
 
 function showExpenses() {
-    let amount = Number(
-        prompt("Enter demo expense amount:")
-    );
+    let amount = Number(prompt("Enter demo expense amount:"));
 
     if (!Number.isFinite(amount) || amount <= 0) {
         alert("Enter a valid amount.");
@@ -99,47 +68,27 @@ function showExpenses() {
     }
 
     totalExpenses += amount;
+    expenses.push({ amount: amount, date: new Date().toLocaleString() });
 
-    expenses.push({
-        amount: amount,
-        date: new Date().toLocaleString()
-    });
-
-    localStorage.setItem(
-        "expenses",
-        JSON.stringify(expenses)
-    );
-
-    localStorage.setItem(
-        "totalExpenses",
-        totalExpenses
-    );
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+    localStorage.setItem("totalExpenses", totalExpenses);
 
     updateDashboard();
-
     alert("Expense added successfully!");
 }
 
 async function openScanner() {
-    let section = document.getElementById("scannerSection");
+    document.getElementById("scannerSection").style.display = "block";
+
     let result = document.getElementById("scanResult");
-
-    section.style.display = "block";
-
     result.textContent = "Starting camera...";
 
     if (typeof Html5Qrcode === "undefined") {
-        result.textContent = "QR scanner library not loaded.";
-        alert("Check your internet connection.");
+        result.textContent = "Scanner library not loaded.";
         return;
     }
 
-    if (qrScanner || scannerBusy) {
-        result.textContent = "Scanner is already running.";
-        return;
-    }
-
-    scannerBusy = true;
+    if (qrScanner) return;
 
     qrScanner = new Html5Qrcode("reader");
 
@@ -147,70 +96,36 @@ async function openScanner() {
         await qrScanner.start(
             { facingMode: "environment" },
             {
-                fps: 15,
-                qrbox: function(width, height) {
-                    let size = Math.floor(
-                        Math.min(width, height) * 0.7
-                    );
-
-                    return {
-                        width: size,
-                        height: size
-                    };
-                },
-                aspectRatio: 1.0
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
             },
-            async function(decodedText) {
-                result.textContent =
-                    "QR Scanned Successfully: " + decodedText;
-
-                if (qrScanner) {
-                    let currentScanner = qrScanner;
-                    qrScanner = null;
-
-                    try {
-                        await currentScanner.stop();
-                        await currentScanner.clear();
-                    } catch (error) {
-                        console.log(error);
-                    }
-                }
-
-                scannerBusy = false;
+            function(decodedText) {
+                result.textContent = "QR RESULT: " + decodedText;
+                alert("QR Scanned: " + decodedText);
             }
         );
 
-        result.textContent =
-            "Camera ready. Point at a test QR code.";
+        result.textContent = "Camera ready. Scan a test QR code.";
 
     } catch (error) {
-        result.textContent =
-            "Camera could not start. Check camera permission.";
-
+        result.textContent = "Camera could not start.";
         alert("Camera error: " + error);
-
         qrScanner = null;
-        scannerBusy = false;
     }
 }
 
 async function stopScanner() {
     if (qrScanner) {
-        let currentScanner = qrScanner;
-        qrScanner = null;
-
         try {
-            await currentScanner.stop();
-            await currentScanner.clear();
+            await qrScanner.stop();
+            await qrScanner.clear();
         } catch (error) {
             console.log(error);
         }
+        qrScanner = null;
     }
 
-    scannerBusy = false;
-
-    document.getElementById("scannerSection").style.display =
-        "none";
+    document.getElementById("scannerSection").style.display = "none";
 }
 
 updateDashboard();
