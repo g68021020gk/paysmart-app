@@ -26,7 +26,15 @@ function addMoney() {
 
     walletBalance += amount;
 
+    transactions.push({
+        type: "Money Added",
+        name: "Wallet",
+        amount: amount,
+        date: new Date().toLocaleString()
+    });
+
     localStorage.setItem("walletBalance", walletBalance);
+    localStorage.setItem("transactions", JSON.stringify(transactions));
 
     updateDashboard();
 
@@ -57,13 +65,14 @@ function sendMoney() {
     walletBalance -= amount;
 
     transactions.push({
+        type: "Money Sent",
         name: name,
         amount: amount,
         date: new Date().toLocaleString()
     });
 
-    localStorage.setItem("transactions", JSON.stringify(transactions));
     localStorage.setItem("walletBalance", walletBalance);
+    localStorage.setItem("transactions", JSON.stringify(transactions));
 
     updateDashboard();
 
@@ -80,11 +89,14 @@ function showTransactions() {
         return;
     }
 
-    transactions.forEach(function(item) {
+    transactions.slice().reverse().forEach(function(item) {
         let entry = document.createElement("p");
 
         entry.textContent =
-            item.name + " - ₹" + item.amount + " - " + item.date;
+            item.type + " | " +
+            item.name + " | ₹" +
+            item.amount + " | " +
+            item.date;
 
         list.appendChild(entry);
     });
@@ -174,7 +186,7 @@ function displayQRHistory() {
         return;
     }
 
-    qrHistory.forEach(function(item) {
+    qrHistory.slice().reverse().forEach(function(item) {
         let entry = document.createElement("p");
 
         entry.textContent = item.text + " - " + item.date;
