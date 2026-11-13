@@ -2,17 +2,9 @@
 let walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
 let totalExpenses = Number(localStorage.getItem("totalExpenses")) || 0;
 
-let transactions = JSON.parse(
-    localStorage.getItem("transactions") || "[]"
-);
-
-let expenses = JSON.parse(
-    localStorage.getItem("expenses") || "[]"
-);
-
-let qrHistory = JSON.parse(
-    localStorage.getItem("qrHistory") || "[]"
-);
+let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+let qrHistory = JSON.parse(localStorage.getItem("qrHistory") || "[]");
 
 let qrScanner = null;
 
@@ -22,6 +14,23 @@ function updateDashboard() {
 
     document.getElementById("expenses").textContent =
         "₹" + totalExpenses.toFixed(2);
+}
+
+function addMoney() {
+    let amount = Number(prompt("Enter demo amount to add:"));
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Enter a valid amount.");
+        return;
+    }
+
+    walletBalance += amount;
+
+    localStorage.setItem("walletBalance", walletBalance);
+
+    updateDashboard();
+
+    alert("Demo money added successfully!");
 }
 
 function sendMoney() {
@@ -150,9 +159,7 @@ async function openScanner() {
 
     } catch (error) {
         result.textContent = "Camera could not start.";
-
         alert("Camera error: " + error);
-
         qrScanner = null;
     }
 }
@@ -193,3 +200,4 @@ async function stopScanner() {
 
 updateDashboard();
 displayQRHistory();
+    
