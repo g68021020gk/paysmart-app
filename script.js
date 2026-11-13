@@ -16,6 +16,10 @@ function updateDashboard() {
         "₹" + totalExpenses.toFixed(2);
 }
 
+function saveTransactions() {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
 function addMoney() {
     let amount = Number(prompt("Enter demo amount to add:"));
 
@@ -34,9 +38,10 @@ function addMoney() {
     });
 
     localStorage.setItem("walletBalance", walletBalance);
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    saveTransactions();
 
     updateDashboard();
+    showTransactions();
 
     alert("Demo money added successfully!");
 }
@@ -72,9 +77,10 @@ function sendMoney() {
     });
 
     localStorage.setItem("walletBalance", walletBalance);
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    saveTransactions();
 
     updateDashboard();
+    showTransactions();
 
     alert("Demo transaction completed!");
 }
@@ -92,8 +98,10 @@ function showTransactions() {
     transactions.slice().reverse().forEach(function(item) {
         let entry = document.createElement("p");
 
+        let type = item.type || "Old Transaction";
+
         entry.textContent =
-            item.type + " | " +
+            type + " | " +
             item.name + " | ₹" +
             item.amount + " | " +
             item.date;
@@ -212,4 +220,5 @@ async function stopScanner() {
 
 updateDashboard();
 displayQRHistory();
-    
+showTransactions();
+            
