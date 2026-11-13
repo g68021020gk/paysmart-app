@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
     <main>
         <section class="welcome">
             <h2>Welcome to PaySmart</h2>
-            <p>Manage your payments easily.</p>
+            <p>Manage your demo payments easily.</p>
         </section>
 
         <section class="dashboard">
@@ -32,32 +33,36 @@
         </section>
 
         <section class="actions">
-<button onclick="openScanner()">Scan QR</button>
-
-<button onclick="sendMoney()">Send Money</button>
-
-<button onclick="showTransactions()">Transactions</button>
-
-<button onclick="showExpenses()">Expense Tracker</button>
+            <button onclick="openScanner()">Scan QR</button>
+            <button onclick="addMoney()">Add Money</button>
+            <button onclick="sendMoney()">Send Money</button>
+            <button onclick="showTransactions()">Transactions</button>
+            <button onclick="showExpenses()">Expense Tracker</button>
         </section>
-    <section id="scannerSection" style="display:none;">
-    <h2>QR Scanner</h2>
-    <div id="reader"></div>
-    <p id="scanResult">Scan a test QR code.</p>
 
-<h3>QR Scan History</h3>
-<div id="qrHistory">No QR scans yet.</div>
+        <section id="scannerSection" style="display:none;">
+            <h2>QR Scanner</h2>
+            <div id="reader"></div>
+            <p id="scanResult">Scan a test QR code.</p>
 
-<button onclick="stopScanner()">Close Scanner</button>
+            <h3>QR Scan History</h3>
+            <div id="qrHistory">No QR scans yet.</div>
 
-<section id="transactionSection">
-    <h2>Transaction History</h2>
-    <div id="transactionList">
-        No transactions yet.
-    </div>
-</section>
+            <button onclick="stopScanner()">Close Scanner</button>
+        </section>
+
+        <section id="transactionSection">
+            <h2>Transaction History</h2>
+            <div id="transactionList">
+                No transactions yet.
+            </div>
+        </section>
+
     </main>
-<script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="script.js?v=2"></script>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js?v=3"></script>
+
 </body>
-</html>
+    </html>
+    
