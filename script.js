@@ -83,3 +83,23 @@ buttons.forEach(function(button) {
     });
 
 });
+function openScanner() {
+    document.getElementById("scannerSection").style.display = "block";
+
+    const scanner = new Html5Qrcode("reader");
+
+    scanner.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: 250
+        },
+        function(decodedText) {
+            document.getElementById("scanResult").textContent =
+                "Scanned: " + decodedText;
+            scanner.stop();
+        }
+    ).catch(function(error) {
+        alert("Camera error: " + error);
+    });
+}
