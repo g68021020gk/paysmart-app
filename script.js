@@ -1,4 +1,3 @@
-
 let walletBalance = 0;
 let totalExpenses = 0;
 
