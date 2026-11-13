@@ -1,6 +1,6 @@
 
-let walletBalance = 0;
-let totalExpenses = 0;
+let walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
+let totalExpenses = Number(localStorage.getItem("totalExpenses")) || 0;
 
 let transactions = JSON.parse(
     localStorage.getItem("transactions") || "[]"
@@ -11,6 +11,7 @@ let expenses = JSON.parse(
 );
 
 let qrScanner = null;
+let scannerBusy = false;
 
 function updateDashboard() {
     document.getElementById("wallet").textContent =
@@ -21,14 +22,14 @@ function updateDashboard() {
 }
 
 function sendMoney() {
-    let name = prompt("Enter receiver name:");
+    let name = prompt("Enter receiver name for demo:");
 
     if (!name) return;
 
     let amount = Number(prompt("Enter demo amount:"));
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
+        alert("Enter a valid amount.");
         return;
     }
 
@@ -37,7 +38,7 @@ function sendMoney() {
         return;
     }
 
-    if (!confirm("Confirm demo payment of ₹" + amount + "?")) {
+    if (!confirm("Confirm demo transaction of ₹" + amount + "?")) {
         return;
     }
 
@@ -56,7 +57,10 @@ function sendMoney() {
         JSON.stringify(transactions)
     );
 
-    localStorage.setItem("walletBalance", walletBalance);
+    localStorage.setItem(
+        "walletBalance",
+        walletBalance
+    );
 
     updateDashboard();
 
@@ -66,28 +70,31 @@ function sendMoney() {
 function showTransactions() {
     let list = document.getElementById("transactionList");
 
+    list.innerHTML = "";
+
     if (transactions.length === 0) {
         list.textContent = "No transactions yet.";
         return;
     }
 
-    list.innerHTML = "";
-
     transactions.forEach(function(item) {
         let entry = document.createElement("p");
 
         entry.textContent =
-            item.name + " - ₹" + item.amount + " - " + item.date;
+            item.name + " - ₹" +
+            item.amount + " - " + item.date;
 
         list.appendChild(entry);
     });
 }
 
 function showExpenses() {
-    let amount = Number(prompt("Enter demo expense amount:"));
+    let amount = Number(
+        prompt("Enter demo expense amount:")
+    );
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
+        alert("Enter a valid amount.");
         return;
     }
 
@@ -98,67 +105,112 @@ function showExpenses() {
         date: new Date().toLocaleString()
     });
 
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-    localStorage.setItem("totalExpenses", totalExpenses);
+    localStorage.setItem(
+        "expenses",
+        JSON.stringify(expenses)
+    );
+
+    localStorage.setItem(
+        "totalExpenses",
+        totalExpenses
+    );
 
     updateDashboard();
 
     alert("Expense added successfully!");
 }
 
-function openScanner() {
-    document.getElementById("scannerSection").style.display = "block";
-    document.getElementById("scanResult").textContent =
-        "Starting camera...";
+async function openScanner() {
+    let section = document.getElementById("scannerSection");
+    let result = document.getElementById("scanResult");
+
+    section.style.display = "block";
+
+    result.textContent = "Starting camera...";
 
     if (typeof Html5Qrcode === "undefined") {
-        alert("QR scanner library did not load. Check your internet connection.");
+        result.textContent = "QR scanner library not loaded.";
+        alert("Check your internet connection.");
         return;
     }
 
-    if (qrScanner) {
+    if (qrScanner || scannerBusy) {
+        result.textContent = "Scanner is already running.";
         return;
     }
+
+    scannerBusy = true;
 
     qrScanner = new Html5Qrcode("reader");
 
-    qrScanner.start(
-        { facingMode: "environment" },
-        {
-            fps: 10,
-            qrbox: 250
-        },
-        function(decodedText) {
-            document.getElementById("scanResult").textContent =
-                "Scanned QR content: " + decodedText;
+    try {
+        await qrScanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 15,
+                qrbox: function(width, height) {
+                    let size = Math.floor(
+                        Math.min(width, height) * 0.7
+                    );
 
-            stopScanner();
-        }
-    ).catch(function(error) {
-        document.getElementById("scanResult").textContent =
-            "Camera could not start. Check camera permission and HTTPS.";
+                    return {
+                        width: size,
+                        height: size
+                    };
+                },
+                aspectRatio: 1.0
+            },
+            async function(decodedText) {
+                result.textContent =
+                    "QR Scanned Successfully: " + decodedText;
 
-        qrScanner = null;
+                if (qrScanner) {
+                    let currentScanner = qrScanner;
+                    qrScanner = null;
+
+                    try {
+                        await currentScanner.stop();
+                        await currentScanner.clear();
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+
+                scannerBusy = false;
+            }
+        );
+
+        result.textContent =
+            "Camera ready. Point at a test QR code.";
+
+    } catch (error) {
+        result.textContent =
+            "Camera could not start. Check camera permission.";
 
         alert("Camera error: " + error);
-    });
+
+        qrScanner = null;
+        scannerBusy = false;
+    }
 }
 
-function stopScanner() {
+async function stopScanner() {
     if (qrScanner) {
-        qrScanner.stop().then(function() {
-            qrScanner.clear();
-            qrScanner = null;
-        }).catch(function(error) {
+        let currentScanner = qrScanner;
+        qrScanner = null;
+
+        try {
+            await currentScanner.stop();
+            await currentScanner.clear();
+        } catch (error) {
             console.log(error);
-            qrScanner = null;
-        });
+        }
     }
 
-    document.getElementById("scannerSection").style.display = "none";
-}
+    scannerBusy = false;
 
-walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
-totalExpenses = Number(localStorage.getItem("totalExpenses")) || 0;
+    document.getElementById("scannerSection").style.display =
+        "none";
+}
 
 updateDashboard();
