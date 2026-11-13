@@ -30,20 +30,22 @@ function addMoney() {
 
     walletBalance += amount;
 
-    transactions.push({
+    let newTransaction = {
         type: "Money Added",
         name: "Wallet",
         amount: amount,
         date: new Date().toLocaleString()
-    });
+    };
 
-    localStorage.setItem("walletBalance", walletBalance);
+    transactions.push(newTransaction);
+
+    localStorage.setItem("walletBalance", String(walletBalance));
     saveTransactions();
 
     updateDashboard();
     showTransactions();
 
-    alert("Demo money added successfully!");
+    alert("Demo money added and transaction saved!");
 }
 
 function sendMoney() {
@@ -76,7 +78,7 @@ function sendMoney() {
         date: new Date().toLocaleString()
     });
 
-    localStorage.setItem("walletBalance", walletBalance);
+    localStorage.setItem("walletBalance", String(walletBalance));
     saveTransactions();
 
     updateDashboard();
@@ -102,9 +104,9 @@ function showTransactions() {
 
         entry.textContent =
             type + " | " +
-            item.name + " | ₹" +
+            (item.name || "Wallet") + " | ₹" +
             item.amount + " | " +
-            item.date;
+            (item.date || "");
 
         list.appendChild(entry);
     });
@@ -126,7 +128,7 @@ function showExpenses() {
     });
 
     localStorage.setItem("expenses", JSON.stringify(expenses));
-    localStorage.setItem("totalExpenses", totalExpenses);
+    localStorage.setItem("totalExpenses", String(totalExpenses));
 
     updateDashboard();
 
@@ -221,4 +223,4 @@ async function stopScanner() {
 updateDashboard();
 displayQRHistory();
 showTransactions();
-            
+                
