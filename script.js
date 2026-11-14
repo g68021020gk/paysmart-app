@@ -17,15 +17,16 @@ let profile = JSON.parse(
     localStorage.getItem("profile") || "null"
 ) || {
     name: "Gowtham",
-    email: "gowtham@example.com"
+    email: "gowtham@77077.com"
 };
 
 let scanner = null;
 let scannerRunning = false;
 
-function formatMoney(amount) {
-    return "₹" + Number(amount).toFixed(2);
-}
+// DEMO PIN: Initial PIN is 1234
+let appPin = localStorage.getItem("appPin") || "1234";
+
+// SAVE DATA
 
 function saveData() {
     localStorage.setItem("walletBalance", walletBalance);
@@ -33,6 +34,17 @@ function saveData() {
     localStorage.setItem("expenses", JSON.stringify(expenses));
     localStorage.setItem("qrHistory", JSON.stringify(qrHistory));
     localStorage.setItem("profile", JSON.stringify(profile));
+}
+
+function formatMoney(amount) {
+    return "₹" + Number(amount).toFixed(2);
+}
+
+function getDateKey(date = new Date()) {
+    let year = date.getFullYear();
+    let month = String(date.getMonth() + 1).padStart(2, "0");
+
+    return year + "-" + month;
 }
 
 // NAVIGATION
@@ -53,15 +65,18 @@ function showSection(sectionId) {
     displayExpenses();
     displayQRHistory();
     displayProfile();
+    displayReport();
 }
 
 // WALLET
 
 function addMoney() {
-    let amount = Number(document.getElementById("addAmount").value);
+    let amount = Number(
+        document.getElementById("addAmount").value
+    );
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount");
+        alert("Enter a valid amount");
         return;
     }
 
@@ -82,25 +97,27 @@ function addMoney() {
     alert("Demo money added successfully!");
 }
 
-// SEND MONEY - DEMO ONLY
+// SEND MONEY - DEMO
 
 function sendMoney() {
     let receiver = document.getElementById("receiverName").value.trim();
 
-    let amount = Number(document.getElementById("sendAmount").value);
+    let amount = Number(
+        document.getElementById("sendAmount").value
+    );
 
-    if (receiver === "") {
-        alert("Please enter receiver name");
+    if (!receiver) {
+        alert("Enter receiver name");
         return;
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount");
+        alert("Enter a valid amount");
         return;
     }
 
     if (amount > walletBalance) {
-        alert("Insufficient wallet balance");
+        alert("Insufficient balance");
         return;
     }
 
@@ -127,29 +144,33 @@ function sendMoney() {
 function addExpense() {
     let name = document.getElementById("expenseName").value.trim();
 
-    let amount = Number(document.getElementById("expenseAmount").value);
+    let amount = Number(
+        document.getElementById("expenseAmount").value
+    );
 
     let category = document.getElementById("expenseCategory").value;
 
-    if (name === "") {
-        alert("Please enter expense name");
+    if (!name) {
+        alert("Enter expense name");
         return;
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount");
+        alert("Enter a valid amount");
         return;
     }
 
-    if (category === "") {
-        alert("Please select a category");
+    if (!category) {
+        alert("Select a category");
         return;
     }
 
     if (amount > walletBalance) {
-        alert("Insufficient wallet balance");
+        alert("Insufficient balance");
         return;
     }
+
+    let now = new Date();
 
     walletBalance -= amount;
 
@@ -157,13 +178,14 @@ function addExpense() {
         name: name,
         amount: amount,
         category: category,
-        date: new Date().toLocaleString()
+        date: now.toLocaleString(),
+        dateISO: now.toISOString()
     });
 
     transactions.unshift({
         type: "Expense: " + name,
         amount: amount,
-        date: new Date().toLocaleString()
+        date: now.toLocaleString()
     });
 
     document.getElementById("expenseName").value = "";
@@ -174,6 +196,7 @@ function addExpense() {
     updateDashboard();
     displayExpenses();
     displayTransactions();
+    displayReport();
 
     alert("Expense added successfully!");
 }
@@ -217,6 +240,51 @@ function displayTransactions() {
     });
 }
 
+// DOWNLOAD TRANSACTIONS CSV
+
+function downloadTransactions() {
+    if (transactions.length === 0) {
+        alert("No transactions available");
+        return;
+    }
+
+    let rows = [
+        ["Transaction Type", "Amount", "Date"]
+    ];
+
+    transactions.forEach(function(item) {
+        rows.push([
+            item.type,
+            item.amount,
+            item.date
+        ]);
+    });
+
+    let csv = rows.map(function(row) {
+        return row.map(function(value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+        }).join(",");
+    }).join("\n");
+
+    let blob = new Blob(
+        ["\uFEFF" + csv],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    let url = URL.createObjectURL(blob);
+
+    let link = document.createElement("a");
+
+    link.href = url;
+    link.download = "PaySmart_Transactions.csv";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+}
+
 // QR SCANNER
 
 async function startScanner() {
@@ -225,7 +293,7 @@ async function startScanner() {
     }
 
     if (typeof Html5Qrcode === "undefined") {
-        alert("QR scanner library could not load. Check your internet connection.");
+        alert("Scanner library not loaded. Check internet.");
         return;
     }
 
@@ -236,7 +304,10 @@ async function startScanner() {
             { facingMode: "environment" },
             {
                 fps: 10,
-                qrbox: { width: 250, height: 250 }
+                qrbox: {
+                    width: 250,
+                    height: 250
+                }
             },
             function(decodedText) {
                 document.getElementById("qrResult").textContent =
@@ -253,7 +324,7 @@ async function startScanner() {
                 stopScanner();
             },
             function(errorMessage) {
-                // QR code not detected in this frame.
+                // Waiting for QR code detection.
             }
         );
 
@@ -263,7 +334,7 @@ async function startScanner() {
         scanner = null;
         scannerRunning = false;
 
-        alert("Camera could not start. Check camera permission and HTTPS.");
+        alert("Camera could not start. Check permissions and HTTPS.");
     }
 }
 
@@ -272,7 +343,7 @@ async function stopScanner() {
         try {
             await scanner.stop();
         } catch (error) {
-            console.log("Scanner stop:", error);
+            console.log("Scanner stop error:", error);
         }
 
         scannerRunning = false;
@@ -296,7 +367,7 @@ function displayQRHistory() {
 }
 
 function clearQRHistory() {
-    if (!confirm("Clear all QR scan history?")) {
+    if (!confirm("Clear all QR history?")) {
         return;
     }
 
@@ -331,8 +402,8 @@ function saveProfile() {
 
     let email = document.getElementById("emailInput").value.trim();
 
-    if (name === "") {
-        alert("Please enter your name");
+    if (!name) {
+        alert("Enter your name");
         return;
     }
 
@@ -353,11 +424,168 @@ function cancelEdit() {
     document.getElementById("editForm").classList.add("hidden");
 }
 
+// MONTHLY EXPENSE REPORT
+
+function displayReport() {
+    let monthInput = document.getElementById("reportMonth");
+
+    if (!monthInput) {
+        return;
+    }
+
+    if (!monthInput.value) {
+        monthInput.value = getDateKey();
+    }
+
+    let selectedMonth = monthInput.value;
+
+    let monthlyExpenses = expenses.filter(function(expense) {
+        let expenseDate;
+
+        if (expense.dateISO) {
+            expenseDate = new Date(expense.dateISO);
+        } else {
+            expenseDate = new Date(expense.date);
+        }
+
+        if (isNaN(expenseDate.getTime())) {
+            return false;
+        }
+
+        return getDateKey(expenseDate) === selectedMonth;
+    });
+
+    let total = monthlyExpenses.reduce(function(sum, expense) {
+        return sum + Number(expense.amount);
+    }, 0);
+
+    document.getElementById("monthlyTotal").textContent =
+        formatMoney(total);
+
+    displayExpenseChart(monthlyExpenses);
+}
+
+// CATEGORY CHART
+
+function displayExpenseChart(monthlyExpenses) {
+    let chart = document.getElementById("expenseChart");
+
+    chart.innerHTML = "";
+
+    let categories = {};
+
+    monthlyExpenses.forEach(function(expense) {
+        let category = expense.category || "Other";
+
+        categories[category] =
+            (categories[category] || 0) + Number(expense.amount);
+    });
+
+    let values = Object.values(categories);
+
+    let maximum = Math.max(...values, 1);
+
+    Object.keys(categories).forEach(function(category) {
+        let amount = categories[category];
+
+        let percentage = (amount / maximum) * 100;
+
+        let row = document.createElement("div");
+        row.className = "chart-row";
+
+        let label = document.createElement("div");
+        label.className = "chart-label";
+
+        let name = document.createElement("span");
+        name.textContent = category;
+
+        let value = document.createElement("strong");
+        value.textContent = formatMoney(amount);
+
+        label.appendChild(name);
+        label.appendChild(value);
+
+        let track = document.createElement("div");
+        track.className = "chart-track";
+
+        let bar = document.createElement("div");
+        bar.className = "chart-bar";
+        bar.style.width = percentage + "%";
+
+        track.appendChild(bar);
+        row.appendChild(label);
+        row.appendChild(track);
+
+        chart.appendChild(row);
+    });
+
+    if (Object.keys(categories).length === 0) {
+        chart.textContent = "No expenses recorded for this month.";
+    }
+}
+
+// DARK MODE
+
+function toggleTheme() {
+    document.body.classList.toggle("dark");
+
+    let isDark = document.body.classList.contains("dark");
+
+    localStorage.setItem("darkMode", isDark);
+
+    document.querySelector("header button").textContent =
+        isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+// DEMO PIN SETTINGS
+
+function changePin() {
+    let newPin = document.getElementById("newPin").value;
+
+    if (!/^\d{4}$/.test(newPin)) {
+        alert("Enter a 4-digit PIN");
+        return;
+    }
+
+    appPin = newPin;
+
+    localStorage.setItem("appPin", appPin);
+
+    document.getElementById("newPin").value = "";
+
+    alert("Demo PIN changed successfully!");
+}
+
+function lockApp() {
+    stopScanner();
+
+    document.getElementById("lockScreen").classList.remove("hidden");
+
+    document.getElementById("pinInput").value = "";
+    document.getElementById("pinMessage").textContent = "";
+}
+
+function unlockApp() {
+    let enteredPin = document.getElementById("pinInput").value;
+
+    if (enteredPin === appPin) {
+        document.getElementById("lockScreen").classList.add("hidden");
+
+        document.getElementById("pinInput").value = "";
+        document.getElementById("pinMessage").textContent = "";
+
+        alert("Welcome to PaySmart!");
+    } else {
+        document.getElementById("pinMessage").textContent =
+            "Incorrect PIN. Try again.";
+    }
+}
+
 // DASHBOARD
 
 function updateDashboard() {
-    let totalExpenses = expenses.reduce(function(total, expense) {
-        return total + Number(expense.amount);
+    let total = expenses.reduce(function(sum, expense) {
+        return sum + Number(expense.amount);
     }, 0);
 
     document.getElementById("walletBalance").textContent =
@@ -370,19 +598,31 @@ function updateDashboard() {
         transactions.length;
 
     document.getElementById("totalExpenses").textContent =
-        formatMoney(totalExpenses);
+        formatMoney(total);
 }
 
 // INITIALIZE APP
 
 function initializeApp() {
+    if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark");
+
+        document.querySelector("header button").textContent =
+            "☀️ Light Mode";
+    }
+
+    document.getElementById("reportMonth").value = getDateKey();
+
     updateDashboard();
     displayTransactions();
     displayExpenses();
     displayQRHistory();
     displayProfile();
+    displayReport();
 
     showSection("home");
+
+    document.getElementById("lockScreen").classList.remove("hidden");
 }
 
 initializeApp();
