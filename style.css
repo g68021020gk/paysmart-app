@@ -1,64 +1,70 @@
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
     background: #f2f5fa;
-    color: #202b3c;
+    color: #222;
+    line-height: 1.5;
 }
 
 header {
-    background: #173f79;
+    background: #173b78;
     color: white;
-    padding: 18px;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 header h1 {
-    margin: 0;
+    font-size: 26px;
 }
 
 nav {
-    background: #24569a;
+    background: #2455a0;
     padding: 12px;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
     justify-content: center;
+    gap: 8px;
 }
 
 button {
-    background: #2463a9;
+    background: #2563c7;
     color: white;
     border: none;
-    border-radius: 7px;
     padding: 11px 16px;
+    border-radius: 7px;
     cursor: pointer;
     margin: 5px 0;
+    font-size: 14px;
 }
 
 button:hover {
-    background: #174578;
+    background: #17468e;
 }
 
 nav button {
     background: #ffffff;
-    color: #174578;
+    color: #173b78;
 }
 
 nav button:hover {
-    background: #dceaff;
+    background: #dce8ff;
 }
 
 main {
     width: 95%;
     max-width: 1100px;
     margin: 25px auto;
+    min-height: 65vh;
 }
 
 .page {
@@ -66,7 +72,7 @@ main {
     background: white;
     padding: 22px;
     border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 10px #00000012;
 }
 
 .page.active {
@@ -74,179 +80,182 @@ main {
 }
 
 h2 {
-    color: #174578;
-    margin-top: 0;
+    color: #173b78;
+    margin-bottom: 20px;
 }
 
-input, select {
-    display: block;
-    width: 100%;
-    padding: 13px;
-    margin: 12px 0;
-    border: 1px solid #ccd5e0;
-    border-radius: 7px;
-    font-size: 15px;
-    background: white;
-    color: #202b3c;
+h3 {
+    margin: 18px 0 10px;
 }
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 15px;
+    margin-bottom: 25px;
 }
 
 .card {
-    background: #eaf2ff;
+    background: #eaf1ff;
+    border-left: 5px solid #2563c7;
     border-radius: 10px;
     padding: 18px;
     margin: 12px 0;
 }
 
-.card h3 {
-    margin-top: 0;
-    color: #174578;
-}
-
 .card p {
-    font-size: 23px;
+    font-size: 22px;
     font-weight: bold;
+    color: #17468e;
     overflow-wrap: anywhere;
 }
 
-.panel, .item {
+input,
+select {
+    display: block;
+    width: 100%;
+    max-width: 450px;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 15px;
+    background: white;
+    color: #222;
+}
+
+.panel {
     background: #f5f7fb;
     padding: 15px;
     border-radius: 8px;
-    margin: 12px 0;
+    margin: 10px 0;
+}
+
+.item {
+    background: #f5f7fb;
+    padding: 13px;
+    margin: 9px 0;
+    border-radius: 8px;
+    border-left: 4px solid #2563c7;
     overflow-wrap: anywhere;
 }
 
-.item small {
-    display: block;
-    color: #667085;
-    margin-top: 7px;
-}
-
-.amount-positive {
-    color: #14804a;
-    font-weight: bold;
-}
-
-.amount-negative {
-    color: #d23b3b;
-    font-weight: bold;
+.item button {
+    margin-left: 8px;
 }
 
 .danger {
-    background: #c83232;
+    background: #d93030;
 }
 
 .danger:hover {
-    background: #9f2020;
+    background: #a71919;
 }
 
 #reader {
-    max-width: 400px;
     width: 100%;
-    margin: 15px auto;
-}
-
-.chart-row {
+    max-width: 450px;
     margin: 15px 0;
 }
 
-.chart-label {
+#reader video {
+    border-radius: 8px;
+}
+
+#dashboardChart {
+    min-height: 80px;
+}
+
+.bar-row {
+    margin: 12px 0;
+}
+
+.bar-label {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 7px;
 }
 
-.chart-track, .progress-track {
-    width: 100%;
-    height: 13px;
-    background: #dce4ef;
-    border-radius: 20px;
+.bar-track {
+    background: #dce5f3;
+    height: 12px;
+    border-radius: 10px;
     overflow: hidden;
+    margin-top: 5px;
 }
 
-.chart-fill, .progress-fill {
+.bar-fill {
+    background: #2563c7;
     height: 100%;
-    background: #2876d2;
-    border-radius: 20px;
+    border-radius: 10px;
 }
 
 footer {
     text-align: center;
     padding: 20px;
-    color: #667085;
+    background: #173b78;
+    color: white;
+    margin-top: 30px;
 }
 
 body.dark {
-    background: #151b27;
-    color: #edf2f7;
+    background: #121826;
+    color: #eeeeee;
 }
 
-body.dark header {
-    background: #101827;
+body.dark header,
+body.dark footer {
+    background: #101a30;
 }
 
 body.dark nav {
-    background: #202c40;
+    background: #1b2c4b;
 }
 
 body.dark nav button {
-    background: #34445e;
+    background: #293c5e;
     color: white;
 }
 
 body.dark .page {
-    background: #222d40;
+    background: #1e293b;
+    color: white;
 }
 
-body.dark h2,
-body.dark .card h3 {
-    color: #9ec8ff;
+body.dark h2 {
+    color: #8bb8ff;
 }
 
 body.dark .card,
-body.dark .panel,
-body.dark .item {
-    background: #303e55;
+body.dark .item,
+body.dark .panel {
+    background: #29374c;
+    color: white;
+}
+
+body.dark .card p {
+    color: #a9caff;
 }
 
 body.dark input,
 body.dark select {
-    background: #303e55;
+    background: #29374c;
     color: white;
-    border-color: #52627b;
+    border-color: #53647d;
 }
 
-body.dark input::placeholder {
-    color: #c5ceda;
-}
-
-body.dark .item small {
-    color: #c5ceda;
-}
-
-body.dark .chart-track,
-body.dark .progress-track {
-    background: #52627b;
-}
-
-body.dark footer {
-    color: #c5ceda;
+body.dark .bar-track {
+    background: #46546b;
 }
 
 @media (max-width: 600px) {
     header {
-        padding: 14px;
+        flex-direction: column;
+        text-align: center;
     }
 
     nav {
-        justify-content: flex-start;
+        justify-content: center;
     }
 
     nav button {
@@ -254,11 +263,15 @@ body.dark footer {
     }
 
     main {
-        width: 94%;
-        margin: 15px auto;
+        width: 96%;
+        margin: 12px auto;
     }
 
     .page {
         padding: 15px;
+    }
+
+    button {
+        max-width: 100%;
     }
 }
