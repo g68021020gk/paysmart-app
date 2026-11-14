@@ -9,13 +9,14 @@ body {
     font-family: Arial, sans-serif;
     background: #f0f4f8;
     color: #222;
+    transition: 0.3s;
 }
 
 header {
     background: #1646a0;
     color: white;
     text-align: center;
-    padding: 25px;
+    padding: 22px;
 }
 
 header h1 {
@@ -28,14 +29,14 @@ nav {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 button {
     background: #1646a0;
     color: white;
     border: none;
-    padding: 12px 16px;
+    padding: 12px 15px;
     border-radius: 8px;
     cursor: pointer;
     margin: 5px;
@@ -46,7 +47,7 @@ button:hover {
 }
 
 main {
-    max-width: 700px;
+    max-width: 750px;
     margin: 20px auto;
     padding: 15px;
 }
@@ -96,6 +97,7 @@ h3 {
     background: #e8efff;
     padding: 20px;
     border-radius: 10px;
+    margin: 12px 0;
 }
 
 .card p {
@@ -107,7 +109,6 @@ h3 {
 .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
 }
 
 input, select {
@@ -119,6 +120,7 @@ input, select {
     border-radius: 8px;
     font-size: 15px;
     background: white;
+    color: #222;
 }
 
 ul {
@@ -170,10 +172,95 @@ li {
     overflow-wrap: anywhere;
 }
 
+.chart-row {
+    margin: 18px 0;
+}
+
+.chart-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 7px;
+}
+
+.chart-track {
+    background: #e0e0e0;
+    height: 16px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.chart-bar {
+    height: 100%;
+    background: #1646a0;
+    border-radius: 20px;
+}
+
+.lock-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.lock-box {
+    background: white;
+    color: #222;
+    padding: 25px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+body.dark {
+    background: #121826;
+    color: white;
+}
+
+body.dark nav,
+body.dark .page {
+    background: #1f2937;
+    color: white;
+}
+
+body.dark h2 {
+    color: #8bb5ff;
+}
+
+body.dark .card,
+body.dark li,
+body.dark #editForm {
+    background: #293548;
+    color: white;
+}
+
+body.dark input,
+body.dark select {
+    background: #293548;
+    color: white;
+    border-color: #526078;
+}
+
+body.dark .card p {
+    color: #a9caff;
+}
+
+body.dark .profile-icon {
+    background: #293548;
+}
+
+body.dark .chart-track {
+    background: #465267;
+}
+
 @media (max-width: 450px) {
     nav button {
         padding: 10px;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     main {
