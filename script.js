@@ -1,39 +1,96 @@
+// PAYSMART DATA
 
-let walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
-let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
-let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
-let qrHistory = JSON.parse(localStorage.getItem("qrHistory") || "[]");
-let profile = JSON.parse(localStorage.getItem("profile") || '{"name":"User","email":""}');
-let monthlyBudget = Number(localStorage.getItem("monthlyBudget")) || 0;
-let categoryBudgets = JSON.parse(localStorage.getItem("categoryBudgets") || "{}");
+function loadData(key, fallback) {
+    try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : JSON.parse(value);
+    } catch (error) {
+        return fallback;
+    }
+}
 
+let walletBalance = Number(loadData("walletBalance", 0));
+let transactions = loadData("transactions", []);
+let expenses = loadData("expenses", []);
+let qrHistory = loadData("qrHistory", []);
+let profile = loadData("profile", {
+    name: "User",
+    email: ""
+});
+let monthlyBudget = Number(loadData("monthlyBudget", 0));
+let categoryBudgets = loadData("categoryBudgets", {});
+let demoPin = localStorage.getItem("demoPin") || "1234";
 let scanner = null;
-let pin = localStorage.getItem("demoPin") || "1234";
+
+
+// SAVE DATA
 
 function saveData() {
-    localStorage.setItem("walletBalance", walletBalance);
+    localStorage.setItem("walletBalance", JSON.stringify(walletBalance));
     localStorage.setItem("transactions", JSON.stringify(transactions));
     localStorage.setItem("expenses", JSON.stringify(expenses));
     localStorage.setItem("qrHistory", JSON.stringify(qrHistory));
     localStorage.setItem("profile", JSON.stringify(profile));
-    localStorage.setItem("monthlyBudget", monthlyBudget);
+    localStorage.setItem("monthlyBudget", JSON.stringify(monthlyBudget));
     localStorage.setItem("categoryBudgets", JSON.stringify(categoryBudgets));
+    localStorage.setItem("demoPin", demoPin);
 }
 
-function showSection(id) {
-    document.querySelectorAll(".section").forEach(section => {
-        section.classList.remove("active");
+
+// HELPERS
+
+function money(amount) {
+    return "₹" + Number(amount || 0).toFixed(2);
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, function (character) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[character];
+    });
+}
+
+function today() {
+    return new Date().toLocaleString();
+}
+
+function isThisMonth(dateValue) {
+    const date = new Date(dateValue);
+    const now = new Date();
+
+    return !isNaN(date.getTime()) &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+}
+
+function showSection(sectionId) {
+    document.querySelectorAll(".page").forEach(function (page) {
+        page.classList.remove("active");
     });
 
-    document.getElementById(id).classList.add("active");
+    const selected = document.getElementById(sectionId);
+
+    if (selected) {
+        selected.classList.add("active");
+    }
+
     updateApp();
 }
 
-function addMoney() {
-    let amount = Number(document.getElementById("addAmount").value);
 
-    if (amount <= 0 || !Number.isFinite(amount)) {
-        alert("Enter a valid amount.");
+// ADD MONEY
+
+function addMoney() {
+    const input = document.getElementById("addAmount");
+    const amount = Number(input.value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Please enter a valid amount.");
         return;
     }
 
@@ -41,24 +98,35 @@ function addMoney() {
 
     transactions.unshift({
         type: "Added Money",
-        name: "Wallet",
+        name: "Wallet Deposit",
         amount: amount,
-        date: new Date().toLocaleString()
+        date: today()
     });
 
-    document.getElementById("addAmount").value = "";
-
+    input.value = "";
     saveData();
     updateApp();
-    alert("Demo money added successfully!");
+
+    alert(money(amount) + " added to your demo wallet.");
 }
 
-function sendMoney() {
-    let name = document.getElementById("receiverName").value.trim();
-    let amount = Number(document.getElementById("sendAmount").value);
 
-    if (!name || amount <= 0 || !Number.isFinite(amount)) {
-        alert("Enter valid receiver details and amount.");
+// SEND MONEY - DEMO ONLY
+
+function sendMoney() {
+    const nameInput = document.getElementById("receiverName");
+    const amountInput = document.getElementById("sendAmount");
+
+    const name = nameInput.value.trim();
+    const amount = Number(amountInput.value);
+
+    if (!name) {
+        alert("Please enter receiver name.");
+        return;
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Please enter a valid amount.");
         return;
     }
 
@@ -72,96 +140,184 @@ function sendMoney() {
     transactions.unshift({
         type: "Demo Sent",
         name: name,
-        amount: amount,
-        date: new Date().toLocaleString()
+        amount: -amount,
+        date: today()
     });
 
-    document.getElementById("receiverName").value = "";
-    document.getElementById("sendAmount").value = "";
+    nameInput.value = "";
+    amountInput.value = "";
 
     saveData();
     updateApp();
-    alert("Demo transaction completed. No real money was sent.");
+
+    alert("Demo transaction completed. No real money was transferred.");
 }
 
-function addExpense() {
-    let name = document.getElementById("expenseName").value.trim();
-    let amount = Number(document.getElementById("expenseAmount").value);
-    let category = document.getElementById("expenseCategory").value;
 
-    if (!name || amount <= 0 || !Number.isFinite(amount)) {
-        alert("Enter valid expense details.");
+// ADD EXPENSE
+
+function addExpense() {
+    const titleInput = document.getElementById("expenseTitle");
+    const amountInput = document.getElementById("expenseAmount");
+    const categoryInput = document.getElementById("expenseCategory");
+
+    const title = titleInput.value.trim();
+    const amount = Number(amountInput.value);
+    const category = categoryInput.value;
+
+    if (!title) {
+        alert("Please enter expense description.");
         return;
     }
 
-    expenses.unshift({
-        name: name,
-        amount: amount,
-        category: category,
-        date: new Date().toISOString()
-    });
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Please enter a valid expense amount.");
+        return;
+    }
+
+    if (amount > walletBalance) {
+        alert("Insufficient demo wallet balance.");
+        return;
+    }
 
     walletBalance -= amount;
 
-    transactions.unshift({
-        type: "Expense",
-        name: name,
+    expenses.unshift({
+        title: title,
         amount: amount,
-        date: new Date().toLocaleString()
+        category: category,
+        date: today()
     });
 
-    document.getElementById("expenseName").value = "";
-    document.getElementById("expenseAmount").value = "";
+    transactions.unshift({
+        type: "Expense",
+        name: title,
+        amount: -amount,
+        date: today()
+    });
+
+    titleInput.value = "";
+    amountInput.value = "";
 
     saveData();
     updateApp();
-    alert("Expense added successfully!");
+
+    alert("Expense added successfully.");
+}
+
+
+// DISPLAY EXPENSES
+
+function updateExpenses() {
+    const list = document.getElementById("expenseList");
+
+    if (expenses.length === 0) {
+        list.innerHTML = "No expenses yet.";
+        return;
+    }
+
+    list.innerHTML = expenses.map(function (expense, index) {
+        return `
+            <div class="item">
+                <strong>${escapeHTML(expense.title)}</strong>
+                <small>${escapeHTML(expense.category)} | ${escapeHTML(expense.date)}</small>
+                <p class="amount-negative">${money(expense.amount)}</p>
+                <button class="danger" onclick="deleteExpense(${index})">Delete</button>
+            </div>
+        `;
+    }).join("");
+}
+
+function deleteExpense(index) {
+    if (!confirm("Delete this expense? The wallet balance will be refunded in this demo.")) {
+        return;
+    }
+
+    const expense = expenses[index];
+
+    if (!expense) return;
+
+    walletBalance += Number(expense.amount);
+
+    transactions.unshift({
+        type: "Expense Refund",
+        name: expense.title,
+        amount: Number(expense.amount),
+        date: today()
+    });
+
+    expenses.splice(index, 1);
+
+    saveData();
+    updateApp();
+}
+
+
+// TRANSACTION HISTORY
+
+function updateTransactions() {
+    const list = document.getElementById("transactionList");
+
+    if (transactions.length === 0) {
+        list.innerHTML = "No transactions yet.";
+        return;
+    }
+
+    list.innerHTML = transactions.map(function (transaction) {
+        const amount = Number(transaction.amount);
+        const className = amount >= 0 ? "amount-positive" : "amount-negative";
+
+        return `
+            <div class="item">
+                <strong>${escapeHTML(transaction.type)}</strong>
+                <small>${escapeHTML(transaction.name)} | ${escapeHTML(transaction.date)}</small>
+                <p class="${className}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
+            </div>
+        `;
+    }).join("");
 }
 
 function filterTransactions() {
-    let search = document.getElementById("transactionSearch").value.toLowerCase();
-    let list = document.getElementById("transactionList");
+    const search = document.getElementById("transactionSearch").value.toLowerCase();
+    const list = document.getElementById("transactionList");
 
-    list.innerHTML = "";
-
-    transactions.filter(item =>
-        String(item.type).toLowerCase().includes(search) ||
-        String(item.name).toLowerCase().includes(search)
-    ).forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = item.type + " - " + item.name +
-            " - ₹" + Number(item.amount).toFixed(2) + " - " + item.date;
-        list.appendChild(li);
+    const filtered = transactions.filter(function (transaction) {
+        return String(transaction.type).toLowerCase().includes(search) ||
+            String(transaction.name).toLowerCase().includes(search);
     });
-}
 
-function updateQRHistory() {
-    let list = document.getElementById("qrHistoryList");
-    list.innerHTML = "";
-
-    qrHistory.forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = item.result + " - " + item.date;
-        list.appendChild(li);
-    });
-}
-
-function clearQRHistory() {
-    if (confirm("Clear all QR scan history?")) {
-        qrHistory = [];
-        saveData();
-        updateQRHistory();
+    if (filtered.length === 0) {
+        list.innerHTML = "No matching transactions.";
+        return;
     }
+
+    list.innerHTML = filtered.map(function (transaction) {
+        const amount = Number(transaction.amount);
+        const className = amount >= 0 ? "amount-positive" : "amount-negative";
+
+        return `
+            <div class="item">
+                <strong>${escapeHTML(transaction.type)}</strong>
+                <small>${escapeHTML(transaction.name)} | ${escapeHTML(transaction.date)}</small>
+                <p class="${className}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
+            </div>
+        `;
+    }).join("");
 }
+
+
+// QR SCANNER
 
 function startScanner() {
-    if (!window.Html5Qrcode) {
-        alert("QR scanner library could not load. Check your internet connection.");
+    const result = document.getElementById("scanResult");
+
+    if (typeof Html5Qrcode === "undefined") {
+        result.textContent = "QR scanner library could not load. Check your internet connection.";
         return;
     }
 
     if (scanner) {
-        alert("Scanner is already running.");
+        result.textContent = "Scanner is already running.";
         return;
     }
 
@@ -169,52 +325,311 @@ function startScanner() {
 
     scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        result => {
-            document.getElementById("qrResult").textContent =
-                "Result: " + result;
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        function (decodedText) {
+            result.textContent = "Scanned result: " + decodedText;
 
             qrHistory.unshift({
-                result: result,
-                date: new Date().toLocaleString()
+                result: decodedText,
+                date: today()
             });
 
             saveData();
             updateQRHistory();
             stopScanner();
         },
-        () => {}
-    ).catch(() => {
+        function () {
+            // Waiting for a QR code.
+        }
+    ).catch(function (error) {
         scanner = null;
-        alert("Unable to start scanner. Allow camera permission and use HTTPS.");
+        result.textContent = "Could not start camera. Check camera permission and try again.";
     });
 }
 
 function stopScanner() {
-    if (scanner) {
-        let currentScanner = scanner;
-        scanner = null;
-
-        currentScanner.stop().then(() => {
-            currentScanner.clear();
-        }).catch(() => {});
+    if (!scanner) {
+        document.getElementById("scanResult").textContent = "Scanner is stopped.";
+        return;
     }
-}
 
-function exportCSV() {
-    let csv = "Type,Name,Amount,Date\n";
+    const currentScanner = scanner;
+    scanner = null;
 
-    transactions.forEach(item => {
-        let values = [item.type, item.name, item.amount, item.date];
-
-        csv += values.map(value =>
-            '"' + String(value ?? "").replace(/"/g, '""') + '"'
-        ).join(",") + "\n";
+    currentScanner.stop().then(function () {
+        return currentScanner.clear();
+    }).catch(function () {
+        // Scanner may already be stopped.
     });
 
-    let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    let url = URL.createObjectURL(blob);
-    let link = document.createElement("a");
+    document.getElementById("scanResult").textContent = "Scanner stopped.";
+}
+
+function updateQRHistory() {
+    const list = document.getElementById("qrHistoryList");
+
+    if (qrHistory.length === 0) {
+        list.innerHTML = "No QR scans yet.";
+        return;
+    }
+
+    list.innerHTML = qrHistory.map(function (item) {
+        return `
+            <div class="item">
+                <strong>${escapeHTML(item.result)}</strong>
+                <small>${escapeHTML(item.date)}</small>
+            </div>
+        `;
+    }).join("");
+}
+
+function clearQRHistory() {
+    if (!confirm("Clear all QR scan history?")) return;
+
+    qrHistory = [];
+    saveData();
+    updateQRHistory();
+}
+
+
+// MONTHLY REPORT
+
+function getMonthlyExpenses() {
+    return expenses.filter(function (expense) {
+        return isThisMonth(expense.date);
+    });
+}
+
+function updateReport() {
+    const monthly = getMonthlyExpenses();
+
+    const total = monthly.reduce(function (sum, expense) {
+        return sum + Number(expense.amount);
+    }, 0);
+
+    document.getElementById("monthlyTotal").textContent = money(total);
+    document.getElementById("monthlyCount").textContent = monthly.length;
+
+    const categories = {};
+
+    monthly.forEach(function (expense) {
+        categories[expense.category] =
+            (categories[expense.category] || 0) + Number(expense.amount);
+    });
+
+    const report = document.getElementById("categoryReport");
+
+    if (Object.keys(categories).length === 0) {
+        report.innerHTML = "No report available.";
+        return;
+    }
+
+    report.innerHTML = Object.keys(categories).map(function (category) {
+        return `
+            <div class="item">
+                <strong>${escapeHTML(category)}</strong>
+                <span>${money(categories[category])}</span>
+            </div>
+        `;
+    }).join("");
+}
+
+
+// MONTHLY BUDGET
+
+function saveBudget() {
+    const amount = Number(document.getElementById("monthlyBudgetInput").value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Enter a valid monthly budget.");
+        return;
+    }
+
+    monthlyBudget = amount;
+    saveData();
+    updateApp();
+
+    alert("Monthly budget saved.");
+}
+
+function saveCategoryBudget() {
+    const category = document.getElementById("budgetCategory").value;
+    const amount = Number(document.getElementById("categoryBudgetInput").value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Enter a valid category budget.");
+        return;
+    }
+
+    categoryBudgets[category] = amount;
+
+    document.getElementById("categoryBudgetInput").value = "";
+
+    saveData();
+    updateApp();
+
+    alert("Category budget saved.");
+}
+
+function updateBudget() {
+    document.getElementById("monthlyBudgetInput").value =
+        monthlyBudget || "";
+
+    document.getElementById("dashboardBudget").textContent =
+        money(monthlyBudget);
+
+    const monthly = getMonthlyExpenses();
+
+    const total = monthly.reduce(function (sum, expense) {
+        return sum + Number(expense.amount);
+    }, 0);
+
+    const status = document.getElementById("budgetStatus");
+
+    if (monthlyBudget > 0) {
+        const remaining = monthlyBudget - total;
+
+        status.textContent = remaining >= 0
+            ? "Remaining budget: " + money(remaining)
+            : "You are over budget by " + money(Math.abs(remaining));
+    } else {
+        status.textContent = "Set a monthly budget to track spending.";
+    }
+
+    const categoryList = document.getElementById("categoryBudgetList");
+
+    categoryList.innerHTML = Object.keys(categoryBudgets).map(function (category) {
+        const spent = monthly
+            .filter(function (expense) {
+                return expense.category === category;
+            })
+            .reduce(function (sum, expense) {
+                return sum + Number(expense.amount);
+            }, 0);
+
+        const budget = Number(categoryBudgets[category]);
+        const percent = budget > 0
+            ? Math.min((spent / budget) * 100, 100)
+            : 0;
+
+        return `
+            <div class="item">
+                <strong>${escapeHTML(category)}</strong>
+                <small>Spent: ${money(spent)} / Budget: ${money(budget)}</small>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:${percent}%"></div>
+                </div>
+            </div>
+        `;
+    }).join("") || "No category budgets saved.";
+}
+
+
+// PROFILE
+
+function saveProfile() {
+    const name = document.getElementById("profileName").value.trim();
+    const email = document.getElementById("profileEmail").value.trim();
+
+    if (!name) {
+        alert("Please enter your name.");
+        return;
+    }
+
+    profile = {
+        name: name,
+        email: email
+    };
+
+    saveData();
+    updateProfile();
+
+    alert("Profile saved successfully.");
+}
+
+function updateProfile() {
+    document.getElementById("profileName").value = profile.name || "";
+    document.getElementById("profileEmail").value = profile.email || "";
+
+    document.getElementById("profileDetails").innerHTML = `
+        <div class="item">
+            <strong>${escapeHTML(profile.name || "User")}</strong>
+            <small>${escapeHTML(profile.email || "No email added")}</small>
+        </div>
+    `;
+}
+
+
+// DEMO PIN
+
+function changePin() {
+    const oldPin = document.getElementById("oldPin").value;
+    const newPin = document.getElementById("newPin").value;
+
+    if (oldPin !== demoPin) {
+        alert("Current PIN is incorrect.");
+        return;
+    }
+
+    if (!/^\d{4}$/.test(newPin)) {
+        alert("New PIN must contain exactly 4 digits.");
+        return;
+    }
+
+    demoPin = newPin;
+    saveData();
+
+    document.getElementById("oldPin").value = "";
+    document.getElementById("newPin").value = "";
+
+    alert("Demo PIN changed successfully.");
+}
+
+
+// DARK MODE
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "darkMode",
+        document.body.classList.contains("dark") ? "on" : "off"
+    );
+}
+
+
+// CSV EXPORT
+
+function exportCSV() {
+    if (transactions.length === 0) {
+        alert("No transactions to export.");
+        return;
+    }
+
+    const rows = [
+        ["Type", "Name", "Amount", "Date"],
+        ...transactions.map(function (transaction) {
+            return [
+                transaction.type,
+                transaction.name,
+                transaction.amount,
+                transaction.date
+            ];
+        })
+    ];
+
+    const csv = rows.map(function (row) {
+        return row.map(function (value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+        }).join(",");
+    }).join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
 
     link.href = url;
     link.download = "PaySmart_Transactions.csv";
@@ -223,498 +638,148 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-function getMonthlyExpenses() {
-    let now = new Date();
 
-    return expenses.filter(item => {
-        let date = new Date(item.date);
-
-        return !Number.isNaN(date.getTime()) &&
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear();
-    });
-}
-
-function updateReport() {
-    let monthlyExpenses = getMonthlyExpenses();
-
-    let total = monthlyExpenses.reduce(
-        (sum, item) => sum + Number(item.amount), 0
-    );
-
-    document.getElementById("monthlyTotal").textContent =
-        "Monthly Expenses: ₹" + total.toFixed(2);
-
-    let categories = {};
-
-    monthlyExpenses.forEach(item => {
-        categories[item.category] =
-            (categories[item.category] || 0) + Number(item.amount);
-    });
-
-    let chart = document.getElementById("reportChart");
-    chart.innerHTML = "";
-
-    Object.entries(categories).forEach(([category, amount]) => {
-        let row = document.createElement("p");
-        row.textContent = category + ": ₹" + amount.toFixed(2);
-        chart.appendChild(row);
-    });
-
-    if (monthlyExpenses.length === 0) {
-        chart.textContent = "No expenses recorded this month.";
-    }
-}
-
-function saveBudget() {
-    let amount = Number(document.getElementById("monthlyBudget").value);
-
-    if (amount <= 0 || !Number.isFinite(amount)) {
-        alert("Enter a valid budget.");
-        return;
-    }
-
-    monthlyBudget = amount;
-    saveData();
-    updateApp();
-
-    alert("Monthly budget saved!");
-}
-
-function saveCategoryBudget() {
-    let category = document.getElementById("budgetCategory").value;
-    let amount = Number(document.getElementById("categoryBudgetAmount").value);
-
-    if (amount <= 0 || !Number.isFinite(amount)) {
-        alert("Enter a valid category budget.");
-        return;
-    }
-
-    categoryBudgets[category] = amount;
-    document.getElementById("categoryBudgetAmount").value = "";
-
-    saveData();
-    updateApp();
-
-    alert("Category budget saved!");
-}
-
-function updateBudget() {
-    document.getElementById("monthlyBudget").value = monthlyBudget || "";
-
-    let total = getMonthlyExpenses().reduce(
-        (sum, item) => sum + Number(item.amount), 0
-    );
-
-    let status = document.getElementById("budgetStatus");
-
-    if (monthlyBudget > 0) {
-        let remaining = monthlyBudget - total;
-
-        status.textContent = remaining >= 0
-            ? "Remaining budget: ₹" + remaining.toFixed(2)
-            : "Budget exceeded by: ₹" + Math.abs(remaining).toFixed(2);
-    } else {
-        status.textContent = "Set a monthly budget to track your spending.";
-    }
-
-    let list = document.getElementById("categoryBudgetList");
-    list.innerHTML = "";
-
-    Object.entries(categoryBudgets).forEach(([category, budget]) => {
-        let spent = getMonthlyExpenses()
-            .filter(item => item.category === category)
-            .reduce((sum, item) => sum + Number(item.amount), 0);
-
-        let p = document.createElement("p");
-
-        p.textContent = category + ": ₹" + spent.toFixed(2) +
-            " / ₹" + Number(budget).toFixed(2);
-
-        list.appendChild(p);
-    });
-}
-
-function saveProfile() {
-    let name = document.getElementById("profileName").value.trim();
-    let email = document.getElementById("profileEmail").value.trim();
-
-    if (!name) {
-        alert("Enter your name.");
-        return;
-    }
-
-    profile = { name: name, email: email };
-
-    saveData();
-    updateProfile();
-
-    document.getElementById("profileMessage").textContent =
-        "Profile saved successfully!";
-}
-
-function updateProfile() {
-    document.getElementById("profileName").value = profile.name || "";
-    document.getElementById("profileEmail").value = profile.email || "";
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    localStorage.setItem(
-        "darkMode",
-        document.body.classList.contains("dark-mode") ? "on" : "off"
-    );
-
-    updateDashboard();
-}
-
-function changePin() {
-    let current = document.getElementById("currentPin").value;
-    let newValue = document.getElementById("newPin").value;
-    let message = document.getElementById("pinMessage");
-
-    if (current !== pin) {
-        message.textContent = "Incorrect current PIN.";
-        return;
-    }
-
-    if (!/^\d{4,6}$/.test(newValue)) {
-        message.textContent = "New PIN must contain 4 to 6 digits.";
-        return;
-    }
-
-    pin = newValue;
-    localStorage.setItem("demoPin", pin);
-
-    document.getElementById("currentPin").value = "";
-    document.getElementById("newPin").value = "";
-
-    message.textContent = "Demo PIN changed successfully.";
-}
-
-/* Dashboard */
-
-function updateDashboard() {
-    let monthlyExpenses = getMonthlyExpenses();
-
-    let total = monthlyExpenses.reduce(
-        (sum, item) => sum + Number(item.amount), 0
-    );
-
-    document.getElementById("dashboardBalance").textContent =
-        "₹" + walletBalance.toFixed(2);
-
-    document.getElementById("dashboardExpenses").textContent =
-        "₹" + total.toFixed(2);
-
-    document.getElementById("dashboardTransactions").textContent =
-        transactions.length;
-
-    document.getElementById("dashboardBudget").textContent =
-        monthlyBudget > 0 ? "₹" + monthlyBudget.toFixed(2) : "Not Set";
-
-    updateDashboardChart(monthlyExpenses);
-    updateSpendingInsights(monthlyExpenses, total);
-    updateRecentTransactions();
-}
-
-function updateDashboardChart(monthlyExpenses) {
-    let categories = {};
-
-    monthlyExpenses.forEach(item => {
-        categories[item.category] =
-            (categories[item.category] || 0) + Number(item.amount);
-    });
-
-    let chart = document.getElementById("dashboardChart");
-    chart.innerHTML = "";
-
-    let entries = Object.entries(categories)
-        .sort((a, b) => b[1] - a[1]);
-
-    if (entries.length === 0) {
-        chart.textContent = "No spending data available this month.";
-        return;
-    }
-
-    let maximum = Math.max(...entries.map(item => item[1]));
-
-    entries.forEach(([category, amount]) => {
-        let row = document.createElement("div");
-        row.className = "chart-row";
-
-        let label = document.createElement("div");
-        label.className = "chart-label";
-
-        let name = document.createElement("span");
-        name.textContent = category;
-
-        let value = document.createElement("strong");
-        value.textContent = "₹" + amount.toFixed(2);
-
-        label.appendChild(name);
-        label.appendChild(value);
-
-        let track = document.createElement("div");
-        track.className = "chart-track";
-
-        let fill = document.createElement("div");
-        fill.className = "chart-fill";
-        fill.style.width = (amount / maximum * 100) + "%";
-
-        track.appendChild(fill);
-        row.appendChild(label);
-        row.appendChild(track);
-
-        chart.appendChild(row);
-    });
-}
-
-function updateSpendingInsights(monthlyExpenses, total) {
-    let insights = document.getElementById("spendingInsights");
-    insights.innerHTML = "";
-
-    let messages = [];
-
-    if (monthlyExpenses.length === 0) {
-        messages.push("No expenses recorded this month. Add an expense to see your insights.");
-    } else {
-        let categories = {};
-
-        monthlyExpenses.forEach(item => {
-            categories[item.category] =
-                (categories[item.category] || 0) + Number(item.amount);
-        });
-
-        let highest = Object.entries(categories)
-            .sort((a, b) => b[1] - a[1])[0];
-
-        messages.push(
-            "Highest spending category: " + highest[0] +
-            " (₹" + highest[1].toFixed(2) + ")."
-        );
-
-        messages.push(
-            "You recorded " + monthlyExpenses.length +
-            " expenses this month."
-        );
-
-        if (monthlyBudget > 0) {
-            let remaining = monthlyBudget - total;
-
-            if (remaining >= 0) {
-                messages.push(
-                    "You have ₹" + remaining.toFixed(2) +
-                    " left in your monthly budget."
-                );
-            } else {
-                messages.push(
-                    "You exceeded your monthly budget by ₹" +
-                    Math.abs(remaining).toFixed(2) + "."
-                );
-            }
-        } else {
-            messages.push(
-                "Set a monthly budget to monitor your spending."
-            );
-        }
-    }
-
-    messages.forEach(message => {
-        let item = document.createElement("div");
-        item.className = "insight-item";
-        item.textContent = message;
-        insights.appendChild(item);
-    });
-}
-
-function updateRecentTransactions() {
-    let list = document.getElementById("dashboardRecentTransactions");
-    list.innerHTML = "";
-
-    let recent = transactions.slice(0, 5);
-
-    if (recent.length === 0) {
-        list.innerHTML = "<li>No transactions available.</li>";
-        return;
-    }
-
-    recent.forEach(item => {
-        let li = document.createElement("li");
-
-        li.textContent = item.type + " - " + item.name +
-            " - ₹" + Number(item.amount).toFixed(2);
-
-        list.appendChild(li);
-    });
-}
-
-/* Backup and Restore */
+// BACKUP
 
 function downloadBackup() {
-    let backup = {
-        appName: "PaySmart",
-        backupVersion: 1,
-        backupDate: new Date().toISOString(),
+    const backup = {
         walletBalance: walletBalance,
         transactions: transactions,
         expenses: expenses,
         qrHistory: qrHistory,
         profile: profile,
         monthlyBudget: monthlyBudget,
-        categoryBudgets: categoryBudgets
+        categoryBudgets: categoryBudgets,
+        demoPin: demoPin
     };
 
-    let blob = new Blob(
+    const blob = new Blob(
         [JSON.stringify(backup, null, 2)],
         { type: "application/json" }
     );
 
-    let url = URL.createObjectURL(blob);
-    let link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
 
     link.href = url;
     link.download = "PaySmart_Backup.json";
     link.click();
 
     URL.revokeObjectURL(url);
-
-    document.getElementById("backupMessage").textContent =
-        "Backup downloaded successfully!";
 }
 
-function validateBackup(data) {
-    if (!data || typeof data !== "object" ||
-        Array.isArray(data) ||
-        data.appName !== "PaySmart" ||
-        data.backupVersion !== 1) {
-        return false;
-    }
 
-    if (!Number.isFinite(data.walletBalance) ||
-        data.walletBalance < 0 ||
-        !Array.isArray(data.transactions) ||
-        !Array.isArray(data.expenses) ||
-        !Array.isArray(data.qrHistory) ||
-        !data.profile ||
-        typeof data.profile.name !== "string" ||
-        typeof data.profile.email !== "string" ||
-        !Number.isFinite(data.monthlyBudget) ||
-        data.monthlyBudget < 0 ||
-        !data.categoryBudgets ||
-        typeof data.categoryBudgets !== "object" ||
-        Array.isArray(data.categoryBudgets)) {
-        return false;
-    }
-
-    let validTransactions = data.transactions.every(item =>
-        item &&
-        typeof item.type === "string" &&
-        typeof item.name === "string" &&
-        Number.isFinite(item.amount) &&
-        item.amount >= 0 &&
-        typeof item.date === "string"
-    );
-
-    let validExpenses = data.expenses.every(item =>
-        item &&
-        typeof item.name === "string" &&
-        Number.isFinite(item.amount) &&
-        item.amount > 0 &&
-        typeof item.category === "string" &&
-        typeof item.date === "string" &&
-        !Number.isNaN(Date.parse(item.date))
-    );
-
-    let validQR = data.qrHistory.every(item =>
-        item &&
-        typeof item.result === "string" &&
-        typeof item.date === "string"
-    );
-
-    let validBudgets = Object.values(data.categoryBudgets).every(value =>
-        Number.isFinite(value) && value > 0
-    );
-
-    return validTransactions && validExpenses && validQR && validBudgets;
-}
+// RESTORE BACKUP
 
 function restoreBackup() {
-    let fileInput = document.getElementById("restoreFile");
-    let message = document.getElementById("backupMessage");
-    let file = fileInput.files[0];
+    const fileInput = document.getElementById("restoreFile");
+    const file = fileInput.files[0];
 
     if (!file) {
-        message.textContent = "Please select a backup JSON file.";
+        alert("Please select a backup JSON file.");
         return;
     }
 
-    if (!confirm("Restoring will replace your current PaySmart data. Continue?")) {
-        return;
-    }
+    const reader = new FileReader();
 
-    let reader = new FileReader();
-
-    reader.onload = function(event) {
+    reader.onload = function (event) {
         try {
-            let data = JSON.parse(event.target.result);
+            const backup = JSON.parse(event.target.result);
 
-            if (!validateBackup(data)) {
-                message.textContent = "Invalid PaySmart backup file.";
+            if (
+                !backup ||
+                typeof backup !== "object" ||
+                !Number.isFinite(Number(backup.walletBalance)) ||
+                !Array.isArray(backup.transactions) ||
+                !Array.isArray(backup.expenses) ||
+                !Array.isArray(backup.qrHistory) ||
+                !backup.profile ||
+                typeof backup.profile !== "object" ||
+                typeof backup.categoryBudgets !== "object"
+            ) {
+                throw new Error("Invalid backup");
+            }
+
+            if (!confirm("Restore this backup? Current PaySmart data will be replaced.")) {
                 return;
             }
 
-            walletBalance = data.walletBalance;
-            transactions = data.transactions;
-            expenses = data.expenses;
-            qrHistory = data.qrHistory;
-            profile = data.profile;
-            monthlyBudget = data.monthlyBudget;
-            categoryBudgets = data.categoryBudgets;
+            walletBalance = Number(backup.walletBalance);
+            transactions = backup.transactions;
+            expenses = backup.expenses;
+            qrHistory = backup.qrHistory;
+            profile = backup.profile;
+            monthlyBudget = Number(backup.monthlyBudget) || 0;
+            categoryBudgets = backup.categoryBudgets || {};
+            demoPin = backup.demoPin || "1234";
 
             saveData();
             updateApp();
 
-            fileInput.value = "";
-            message.textContent = "Backup restored successfully!";
+            alert("Backup restored successfully.");
         } catch (error) {
-            message.textContent = "Unable to read this backup file.";
+            alert("Invalid backup file. Please select a PaySmart backup.");
         }
-    };
-
-    reader.onerror = function() {
-        message.textContent = "Error reading the selected file.";
     };
 
     reader.readAsText(file);
 }
 
-/* Update all sections */
 
-function updateApp() {
-    document.getElementById("walletBalance").textContent =
-        "₹" + walletBalance.toFixed(2);
+// RESET DEMO DATA
 
-    let total = expenses.reduce(
-        (sum, item) => sum + Number(item.amount), 0
-    );
+function resetDemoData() {
+    if (!confirm("Are you sure? This will permanently clear PaySmart demo data from this browser.")) {
+        return;
+    }
 
-    document.getElementById("totalExpenses").textContent =
-        "₹" + total.toFixed(2);
+    walletBalance = 0;
+    transactions = [];
+    expenses = [];
+    qrHistory = [];
+    profile = { name: "User", email: "" };
+    monthlyBudget = 0;
+    categoryBudgets = {};
+    demoPin = "1234";
 
-    let expenseList = document.getElementById("expenseList");
-    expenseList.innerHTML = "";
+    saveData();
+    updateApp();
 
-    expenses.forEach(item => {
-        let li = document.createElement("li");
+    alert("PaySmart demo data has been reset.");
+}
 
-        li.textContent = item.name + " - ₹" +
-            Number(item.amount).toFixed(2) +
-            " (" + item.category + ")";
 
-        expenseList.appendChild(li);
+// DASHBOARD
+
+function updateDashboard() {
+    document.getElementById("dashboardBalance").textContent =
+        money(walletBalance);
+
+    document.getElementById("dashboardExpenses").textContent =
+        money(getMonthlyExpenses().reduce(function (sum, expense) {
+            return sum + Number(expense.amount);
+        }, 0));
+
+    document.getElementById("dashboardTransactions").textContent =
+        transactions.length;
+
+    updateDashboardChart();
+    updateSpendingInsights();
+    updateRecentTransactions();
+}
+
+function updateDashboardChart() {
+    const monthly = getMonthlyExpenses();
+    const totals = {};
+
+    monthly.forEach(function (expense) {
+        totals[expense.category] =
+            (totals[expense.category] || 0) + Number(expense.amount);
     });
 
-    filterTransactions();
-    up
+    const chart = document.getElementById("dashboardChart");
+    const values = Object.values(totals);
+    const maximum = Math.max(...values, 1);
+
+    if (values.length === 0) {
+      
