@@ -154,6 +154,11 @@ li {
     border-radius: 8px;
 }
 
+#filterResult {
+    font-size: 14px;
+    color: #52657c;
+}
+
 footer {
     text-align: center;
     padding: 15px;
@@ -210,6 +215,10 @@ body.dark select {
 
 body.dark .chart-bar {
     background: #4a5665;
+}
+
+body.dark #filterResult {
+    color: #c4d0df;
 }
 
 @media (max-width: 600px) {
