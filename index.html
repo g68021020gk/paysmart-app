@@ -43,20 +43,24 @@
 
     <section id="home" class="section active">
         <h2>Welcome to PaySmart</h2>
+
         <div class="balance-card">
             <p>Wallet Balance</p>
             <h1>₹<span id="homeBalance">0</span></h1>
         </div>
+
         <div class="dashboard-grid">
             <div class="dashboard-card">
                 <h3>Total Expenses</h3>
                 <p>₹<span id="homeExpenses">0</span></p>
             </div>
+
             <div class="dashboard-card">
                 <h3>Transactions</h3>
                 <p id="homeTransactions">0</p>
             </div>
         </div>
+
         <p id="homeWelcome">Welcome!</p>
     </section>
 
@@ -79,6 +83,7 @@
         <h2>Expense Tracker</h2>
         <input type="text" id="expenseName" placeholder="Expense description">
         <input type="number" id="expenseAmount" placeholder="Expense amount">
+
         <select id="expenseCategory">
             <option value="Food">Food</option>
             <option value="Travel">Travel</option>
@@ -87,13 +92,16 @@
             <option value="Bills">Bills</option>
             <option value="Other">Other</option>
         </select>
+
         <button onclick="addExpense()">Add Expense</button>
+
         <h3>Total Expenses: ₹<span id="totalExpenses">0</span></h3>
         <ul id="expenseList"></ul>
     </section>
 
     <section id="budget" class="section">
         <h2>Monthly Budget Planner</h2>
+
         <input type="number" id="monthlyBudget" placeholder="Enter monthly budget">
         <button onclick="saveBudget()">Save Monthly Budget</button>
 
@@ -105,6 +113,7 @@
         </div>
 
         <h3>Category Budgets</h3>
+
         <select id="budgetCategory">
             <option value="Food">Food</option>
             <option value="Travel">Travel</option>
@@ -113,16 +122,20 @@
             <option value="Bills">Bills</option>
             <option value="Other">Other</option>
         </select>
+
         <input type="number" id="categoryBudgetAmount" placeholder="Category budget">
         <button onclick="saveCategoryBudget()">Save Category Budget</button>
+
         <div id="categoryBudgetList"></div>
     </section>
 
     <section id="scanner" class="section">
         <h2>QR Code Scanner</h2>
         <div id="reader"></div>
+
         <button onclick="startScanner()">Start Scanner</button>
         <button onclick="stopScanner()">Stop Scanner</button>
+
         <h3>Scan Result</h3>
         <p id="scanResult">No QR code scanned yet.</p>
     </section>
@@ -167,6 +180,7 @@
 
     <section id="profile" class="section">
         <h2>User Profile</h2>
+
         <p>Name: <span id="profileName">User</span></p>
         <p>Email: <span id="profileEmail">Not added</span></p>
 
@@ -196,7 +210,8 @@
             <h3>📤 Restore Backup</h3>
             <p>Select a previously downloaded PaySmart backup file.</p>
 
-            <input type="file" id="restoreFile" accept=".json">
+            <input type="file" id="restoreFile" accept=".json,application/json">
+
             <button onclick="restoreBackup()">Restore Data</button>
         </div>
 
