@@ -26,11 +26,6 @@ function showSection(id) {
     });
 
     document.getElementById(id).classList.add("active");
-
-    if (id === "scanner") {
-        document.getElementById("qrResult").textContent = "Press Start Scanner.";
-    }
-
     updateApp();
 }
 
@@ -52,6 +47,7 @@ function addMoney() {
     });
 
     document.getElementById("addAmount").value = "";
+
     saveData();
     updateApp();
     alert("Demo money added successfully!");
@@ -133,7 +129,8 @@ function filterTransactions() {
         String(item.name).toLowerCase().includes(search)
     ).forEach(item => {
         let li = document.createElement("li");
-        li.textContent = item.type + " - " + item.name + " - ₹" + Number(item.amount).toFixed(2) + " - " + item.date;
+        li.textContent = item.type + " - " + item.name +
+            " - ₹" + Number(item.amount).toFixed(2) + " - " + item.date;
         list.appendChild(li);
     });
 }
@@ -174,7 +171,8 @@ function startScanner() {
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         result => {
-            document.getElementById("qrResult").textContent = "Result: " + result;
+            document.getElementById("qrResult").textContent =
+                "Result: " + result;
 
             qrHistory.unshift({
                 result: result,
@@ -186,7 +184,7 @@ function startScanner() {
             stopScanner();
         },
         () => {}
-    ).catch(error => {
+    ).catch(() => {
         scanner = null;
         alert("Unable to start scanner. Allow camera permission and use HTTPS.");
     });
@@ -208,6 +206,7 @@ function exportCSV() {
 
     transactions.forEach(item => {
         let values = [item.type, item.name, item.amount, item.date];
+
         csv += values.map(value =>
             '"' + String(value ?? "").replace(/"/g, '""') + '"'
         ).join(",") + "\n";
@@ -224,16 +223,24 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-function updateReport() {
+function getMonthlyExpenses() {
     let now = new Date();
 
-    let monthlyExpenses = expenses.filter(item => {
+    return expenses.filter(item => {
         let date = new Date(item.date);
-        return date.getMonth() === now.getMonth() &&
-               date.getFullYear() === now.getFullYear();
-    });
 
-    let total = monthlyExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
+        return !Number.isNaN(date.getTime()) &&
+            date.getMonth() === now.getMonth() &&
+            date.getFullYear() === now.getFullYear();
+    });
+}
+
+function updateReport() {
+    let monthlyExpenses = getMonthlyExpenses();
+
+    let total = monthlyExpenses.reduce(
+        (sum, item) => sum + Number(item.amount), 0
+    );
 
     document.getElementById("monthlyTotal").textContent =
         "Monthly Expenses: ₹" + total.toFixed(2);
@@ -241,7 +248,8 @@ function updateReport() {
     let categories = {};
 
     monthlyExpenses.forEach(item => {
-        categories[item.category] = (categories[item.category] || 0) + Number(item.amount);
+        categories[item.category] =
+            (categories[item.category] || 0) + Number(item.amount);
     });
 
     let chart = document.getElementById("reportChart");
@@ -268,7 +276,8 @@ function saveBudget() {
 
     monthlyBudget = amount;
     saveData();
-    updateBudget();
+    updateApp();
+
     alert("Monthly budget saved!");
 }
 
@@ -285,25 +294,26 @@ function saveCategoryBudget() {
     document.getElementById("categoryBudgetAmount").value = "";
 
     saveData();
-    updateBudget();
+    updateApp();
+
     alert("Category budget saved!");
 }
 
 function updateBudget() {
     document.getElementById("monthlyBudget").value = monthlyBudget || "";
 
-    let now = new Date();
-    let total = expenses.filter(item => {
-        let date = new Date(item.date);
-        return date.getMonth() === now.getMonth() &&
-               date.getFullYear() === now.getFullYear();
-    }).reduce((sum, item) => sum + Number(item.amount), 0);
+    let total = getMonthlyExpenses().reduce(
+        (sum, item) => sum + Number(item.amount), 0
+    );
 
     let status = document.getElementById("budgetStatus");
 
     if (monthlyBudget > 0) {
-        status.textContent = "Used: ₹" + total.toFixed(2) +
-            " / ₹" + monthlyBudget.toFixed(2);
+        let remaining = monthlyBudget - total;
+
+        status.textContent = remaining >= 0
+            ? "Remaining budget: ₹" + remaining.toFixed(2)
+            : "Budget exceeded by: ₹" + Math.abs(remaining).toFixed(2);
     } else {
         status.textContent = "Set a monthly budget to track your spending.";
     }
@@ -312,16 +322,15 @@ function updateBudget() {
     list.innerHTML = "";
 
     Object.entries(categoryBudgets).forEach(([category, budget]) => {
-        let spent = expenses.filter(item => {
-            let date = new Date(item.date);
-            return item.category === category &&
-                   date.getMonth() === now.getMonth() &&
-                   date.getFullYear() === now.getFullYear();
-        }).reduce((sum, item) => sum + Number(item.amount), 0);
+        let spent = getMonthlyExpenses()
+            .filter(item => item.category === category)
+            .reduce((sum, item) => sum + Number(item.amount), 0);
 
         let p = document.createElement("p");
+
         p.textContent = category + ": ₹" + spent.toFixed(2) +
             " / ₹" + Number(budget).toFixed(2);
+
         list.appendChild(p);
     });
 }
@@ -336,6 +345,7 @@ function saveProfile() {
     }
 
     profile = { name: name, email: email };
+
     saveData();
     updateProfile();
 
@@ -355,6 +365,8 @@ function toggleDarkMode() {
         "darkMode",
         document.body.classList.contains("dark-mode") ? "on" : "off"
     );
+
+    updateDashboard();
 }
 
 function changePin() {
@@ -377,34 +389,168 @@ function changePin() {
 
     document.getElementById("currentPin").value = "";
     document.getElementById("newPin").value = "";
+
     message.textContent = "Demo PIN changed successfully.";
 }
 
-function updateApp() {
-    document.getElementById("walletBalance").textContent =
+/* Dashboard */
+
+function updateDashboard() {
+    let monthlyExpenses = getMonthlyExpenses();
+
+    let total = monthlyExpenses.reduce(
+        (sum, item) => sum + Number(item.amount), 0
+    );
+
+    document.getElementById("dashboardBalance").textContent =
         "₹" + walletBalance.toFixed(2);
 
-    let total = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
-
-    document.getElementById("totalExpenses").textContent =
+    document.getElementById("dashboardExpenses").textContent =
         "₹" + total.toFixed(2);
 
-    let expenseList = document.getElementById("expenseList");
-    expenseList.innerHTML = "";
+    document.getElementById("dashboardTransactions").textContent =
+        transactions.length;
 
-    expenses.forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = item.name + " - ₹" +
-            Number(item.amount).toFixed(2) + " (" + item.category + ")";
-        expenseList.appendChild(li);
+    document.getElementById("dashboardBudget").textContent =
+        monthlyBudget > 0 ? "₹" + monthlyBudget.toFixed(2) : "Not Set";
+
+    updateDashboardChart(monthlyExpenses);
+    updateSpendingInsights(monthlyExpenses, total);
+    updateRecentTransactions();
+}
+
+function updateDashboardChart(monthlyExpenses) {
+    let categories = {};
+
+    monthlyExpenses.forEach(item => {
+        categories[item.category] =
+            (categories[item.category] || 0) + Number(item.amount);
     });
 
-    filterTransactions();
-    updateQRHistory();
-    updateProfile();
-    updateBudget();
-    updateReport();
+    let chart = document.getElementById("dashboardChart");
+    chart.innerHTML = "";
+
+    let entries = Object.entries(categories)
+        .sort((a, b) => b[1] - a[1]);
+
+    if (entries.length === 0) {
+        chart.textContent = "No spending data available this month.";
+        return;
+    }
+
+    let maximum = Math.max(...entries.map(item => item[1]));
+
+    entries.forEach(([category, amount]) => {
+        let row = document.createElement("div");
+        row.className = "chart-row";
+
+        let label = document.createElement("div");
+        label.className = "chart-label";
+
+        let name = document.createElement("span");
+        name.textContent = category;
+
+        let value = document.createElement("strong");
+        value.textContent = "₹" + amount.toFixed(2);
+
+        label.appendChild(name);
+        label.appendChild(value);
+
+        let track = document.createElement("div");
+        track.className = "chart-track";
+
+        let fill = document.createElement("div");
+        fill.className = "chart-fill";
+        fill.style.width = (amount / maximum * 100) + "%";
+
+        track.appendChild(fill);
+        row.appendChild(label);
+        row.appendChild(track);
+
+        chart.appendChild(row);
+    });
 }
+
+function updateSpendingInsights(monthlyExpenses, total) {
+    let insights = document.getElementById("spendingInsights");
+    insights.innerHTML = "";
+
+    let messages = [];
+
+    if (monthlyExpenses.length === 0) {
+        messages.push("No expenses recorded this month. Add an expense to see your insights.");
+    } else {
+        let categories = {};
+
+        monthlyExpenses.forEach(item => {
+            categories[item.category] =
+                (categories[item.category] || 0) + Number(item.amount);
+        });
+
+        let highest = Object.entries(categories)
+            .sort((a, b) => b[1] - a[1])[0];
+
+        messages.push(
+            "Highest spending category: " + highest[0] +
+            " (₹" + highest[1].toFixed(2) + ")."
+        );
+
+        messages.push(
+            "You recorded " + monthlyExpenses.length +
+            " expenses this month."
+        );
+
+        if (monthlyBudget > 0) {
+            let remaining = monthlyBudget - total;
+
+            if (remaining >= 0) {
+                messages.push(
+                    "You have ₹" + remaining.toFixed(2) +
+                    " left in your monthly budget."
+                );
+            } else {
+                messages.push(
+                    "You exceeded your monthly budget by ₹" +
+                    Math.abs(remaining).toFixed(2) + "."
+                );
+            }
+        } else {
+            messages.push(
+                "Set a monthly budget to monitor your spending."
+            );
+        }
+    }
+
+    messages.forEach(message => {
+        let item = document.createElement("div");
+        item.className = "insight-item";
+        item.textContent = message;
+        insights.appendChild(item);
+    });
+}
+
+function updateRecentTransactions() {
+    let list = document.getElementById("dashboardRecentTransactions");
+    list.innerHTML = "";
+
+    let recent = transactions.slice(0, 5);
+
+    if (recent.length === 0) {
+        list.innerHTML = "<li>No transactions available.</li>";
+        return;
+    }
+
+    recent.forEach(item => {
+        let li = document.createElement("li");
+
+        li.textContent = item.type + " - " + item.name +
+            " - ₹" + Number(item.amount).toFixed(2);
+
+        list.appendChild(li);
+    });
+}
+
+/* Backup and Restore */
 
 function downloadBackup() {
     let backup = {
@@ -446,11 +592,12 @@ function validateBackup(data) {
         return false;
     }
 
-    if (!Number.isFinite(data.walletBalance) || data.walletBalance < 0 ||
+    if (!Number.isFinite(data.walletBalance) ||
+        data.walletBalance < 0 ||
         !Array.isArray(data.transactions) ||
         !Array.isArray(data.expenses) ||
         !Array.isArray(data.qrHistory) ||
-        !data.profile || typeof data.profile !== "object" ||
+        !data.profile ||
         typeof data.profile.name !== "string" ||
         typeof data.profile.email !== "string" ||
         !Number.isFinite(data.monthlyBudget) ||
@@ -543,9 +690,31 @@ function restoreBackup() {
     reader.readAsText(file);
 }
 
-if (localStorage.getItem("darkMode") === "on") {
-    document.body.classList.add("dark-mode");
-}
+/* Update all sections */
 
-updateApp();
-        
+function updateApp() {
+    document.getElementById("walletBalance").textContent =
+        "₹" + walletBalance.toFixed(2);
+
+    let total = expenses.reduce(
+        (sum, item) => sum + Number(item.amount), 0
+    );
+
+    document.getElementById("totalExpenses").textContent =
+        "₹" + total.toFixed(2);
+
+    let expenseList = document.getElementById("expenseList");
+    expenseList.innerHTML = "";
+
+    expenses.forEach(item => {
+        let li = document.createElement("li");
+
+        li.textContent = item.name + " - ₹" +
+            Number(item.amount).toFixed(2) +
+            " (" + item.category + ")";
+
+        expenseList.appendChild(li);
+    });
+
+    filterTransactions();
+    up
