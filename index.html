@@ -8,28 +8,30 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-
 <body>
 
 <header>
     <h1>💳 PaySmart</h1>
     <p>Your Smart Wallet</p>
+    <button onclick="toggleTheme()">🌙 Dark Mode</button>
 </header>
 
 <nav>
     <button onclick="showSection('home')">Home</button>
     <button onclick="showSection('wallet')">Wallet</button>
+    <button onclick="showSection('send')">Send</button>
     <button onclick="showSection('expenses')">Expenses</button>
     <button onclick="showSection('scanner')">Scanner</button>
-    <button onclick="showSection('history')">History</button>
+    <button onclick="showSection('qrHistory')">QR History</button>
+    <button onclick="showSection('history')">Transactions</button>
+    <button onclick="showSection('report')">Reports</button>
     <button onclick="showSection('profile')">Profile</button>
 </nav>
 
 <main>
 
-    <!-- HOME SECTION -->
+    <!-- HOME -->
     <section id="home" class="page">
-
         <h2>Welcome to PaySmart!</h2>
 
         <div class="balance-card">
@@ -38,7 +40,6 @@
         </div>
 
         <div class="dashboard">
-
             <div class="card">
                 <h3>Total Transactions</h3>
                 <p id="totalTransactions">0</p>
@@ -48,7 +49,6 @@
                 <h3>Total Expenses</h3>
                 <p id="totalExpenses">₹0.00</p>
             </div>
-
         </div>
 
         <h3>Quick Actions</h3>
@@ -58,31 +58,24 @@
             <button onclick="showSection('send')">Send Money</button>
             <button onclick="showSection('expenses')">Add Expense</button>
             <button onclick="showSection('scanner')">Scan QR</button>
-            <button onclick="showSection('profile')">My Profile</button>
+            <button onclick="showSection('report')">Monthly Report</button>
         </div>
-
     </section>
 
-
-    <!-- WALLET SECTION -->
+    <!-- WALLET -->
     <section id="wallet" class="page hidden">
-
         <h2>My Wallet</h2>
-
         <h3>Balance: <span id="walletBalance2">₹0.00</span></h3>
 
         <input type="number" id="addAmount"
             placeholder="Enter amount" min="0.01" step="0.01">
 
         <button onclick="addMoney()">Add Money</button>
-
     </section>
 
-
-    <!-- SEND MONEY SECTION -->
+    <!-- SEND MONEY -->
     <section id="send" class="page hidden">
-
-        <h2>Send Money</h2>
+        <h2>Send Money (Demo)</h2>
 
         <input type="text" id="receiverName"
             placeholder="Enter receiver name">
@@ -91,13 +84,10 @@
             placeholder="Enter amount" min="0.01" step="0.01">
 
         <button onclick="sendMoney()">Send Money</button>
-
     </section>
 
-
-    <!-- EXPENSE SECTION -->
+    <!-- EXPENSES -->
     <section id="expenses" class="page hidden">
-
         <h2>Expense Tracker</h2>
 
         <input type="text" id="expenseName"
@@ -112,6 +102,7 @@
             <option value="Travel">Travel</option>
             <option value="Shopping">Shopping</option>
             <option value="Education">Education</option>
+            <option value="Bills">Bills</option>
             <option value="Other">Other</option>
         </select>
 
@@ -119,13 +110,10 @@
 
         <h3>My Expenses</h3>
         <ul id="expenseList"></ul>
-
     </section>
 
-
-    <!-- QR SCANNER SECTION -->
+    <!-- QR SCANNER -->
     <section id="scanner" class="page hidden">
-
         <h2>QR Code Scanner</h2>
 
         <div id="reader"></div>
@@ -134,53 +122,56 @@
         <button onclick="stopScanner()">Stop Scanner</button>
 
         <h3>Scanned Result</h3>
-
         <p id="qrResult">No QR code scanned yet.</p>
-
-        <button onclick="showSection('qrHistory')">
-            View QR History
-        </button>
-
     </section>
 
-
-    <!-- QR HISTORY SECTION -->
+    <!-- QR HISTORY -->
     <section id="qrHistory" class="page hidden">
-
         <h2>QR Scan History</h2>
-
         <ul id="qrHistoryList"></ul>
-
         <button onclick="clearQRHistory()">Clear History</button>
-
     </section>
-
 
     <!-- TRANSACTION HISTORY -->
     <section id="history" class="page hidden">
-
         <h2>Transaction History</h2>
 
-        <ul id="transactionList"></ul>
+        <button onclick="downloadTransactions()">
+            Download Transactions CSV
+        </button>
 
+        <ul id="transactionList"></ul>
     </section>
 
+    <!-- MONTHLY REPORT -->
+    <section id="report" class="page hidden">
+        <h2>Monthly Expense Report</h2>
 
-    <!-- PROFILE SECTION -->
+        <label for="reportMonth">Select Month:</label>
+        <input type="month" id="reportMonth"
+            onchange="displayReport()">
+
+        <div class="card">
+            <h3>Monthly Spending</h3>
+            <p id="monthlyTotal">₹0.00</p>
+        </div>
+
+        <h3>Category-wise Expense Chart</h3>
+        <div id="expenseChart"></div>
+    </section>
+
+    <!-- PROFILE -->
     <section id="profile" class="page hidden">
-
         <h2>My Profile</h2>
 
         <div class="profile-icon">👤</div>
 
         <h3 id="profileName">Gowtham</h3>
-
         <p id="profileEmail">gowtham@example.com</p>
 
         <button onclick="editProfile()">Edit Profile</button>
 
         <div id="editForm" class="hidden">
-
             <h3>Edit Profile</h3>
 
             <input type="text" id="nameInput"
@@ -190,14 +181,36 @@
                 placeholder="Enter your email">
 
             <button onclick="saveProfile()">Save Profile</button>
-
             <button onclick="cancelEdit()">Cancel</button>
-
         </div>
 
+        <hr>
+
+        <h3>Demo PIN Settings</h3>
+        <input type="password" id="newPin"
+            placeholder="Enter new 4-digit PIN"
+            inputmode="numeric" maxlength="4">
+
+        <button onclick="changePin()">Change PIN</button>
+        <button onclick="lockApp()">Lock App</button>
     </section>
 
 </main>
+
+<!-- DEMO PIN LOCK -->
+<div id="lockScreen" class="lock-screen hidden">
+    <div class="lock-box">
+        <h2>🔒 PaySmart Locked</h2>
+        <p>Enter your demo PIN</p>
+
+        <input type="password" id="pinInput"
+            placeholder="Enter 4-digit PIN"
+            inputmode="numeric" maxlength="4">
+
+        <button onclick="unlockApp()">Unlock</button>
+        <p id="pinMessage"></p>
+    </div>
+</div>
 
 <script src="script.js"></script>
 
