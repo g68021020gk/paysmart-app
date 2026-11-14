@@ -92,7 +92,6 @@
 
     <section id="budget" class="section">
         <h2>Monthly Budget Planner</h2>
-        <p>Set your total monthly spending limit.</p>
         <input type="number" id="monthlyBudget" placeholder="Enter monthly budget">
         <button onclick="saveBudget()">Save Monthly Budget</button>
 
@@ -134,7 +133,33 @@
 
     <section id="transactions" class="section">
         <h2>Transaction History</h2>
+
+        <input
+            type="text"
+            id="searchTransaction"
+            placeholder="Search by transaction name or type"
+            oninput="filterTransactions()"
+        >
+
+        <select id="transactionType" onchange="filterTransactions()">
+            <option value="all">All Transactions</option>
+            <option value="Money Added">Money Added</option>
+            <option value="Sent">Money Sent</option>
+            <option value="Expense">Expenses</option>
+        </select>
+
+        <label for="transactionDate">Filter by date:</label>
+        <input
+            type="date"
+            id="transactionDate"
+            onchange="filterTransactions()"
+        >
+
+        <button onclick="clearTransactionFilters()">Clear Filters</button>
+
+        <p id="filterResult"></p>
         <ul id="transactionList"></ul>
+
         <button onclick="downloadTransactions()">Download Transactions CSV</button>
     </section>
 
