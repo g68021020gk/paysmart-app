@@ -119,6 +119,73 @@ li {
     color: #d35454;
 }
 
+/* Dashboard */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.dashboard-card {
+    background: linear-gradient(135deg, #173b75, #2878c8);
+    color: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.dashboard-card h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.dashboard-card h2 {
+    color: white;
+    font-size: 23px;
+    overflow-wrap: anywhere;
+}
+
+.chart-row {
+    margin: 15px 0;
+}
+
+.chart-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.chart-track {
+    width: 100%;
+    height: 13px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.chart-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2878c8, #35a8df);
+    border-radius: 10px;
+    transition: width 0.4s;
+}
+
+.insight-item {
+    padding: 12px;
+    margin: 9px 0;
+    border-left: 4px solid #2878c8;
+    background: #edf4fc;
+    border-radius: 6px;
+    line-height: 1.5;
+}
+
+#dashboardRecentTransactions li {
+    border-left-color: #16834b;
+}
+
 #reader {
     width: 100%;
     max-width: 400px;
@@ -151,6 +218,8 @@ footer {
     color: white;
     margin-top: 30px;
 }
+
+/* Dark Mode */
 
 body.dark-mode {
     background: #151923;
@@ -190,6 +259,17 @@ body.dark-mode {
     color: #ff8585;
 }
 
+.dark-mode .insight-item {
+    background: #303c50;
+    color: white;
+}
+
+.dark-mode .chart-track {
+    background: #465268;
+}
+
+/* Mobile Design */
+
 @media (max-width: 600px) {
     header h1 {
         font-size: 27px;
@@ -212,6 +292,14 @@ body.dark-mode {
 
     .card {
         padding: 15px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-card {
+        padding: 18px;
     }
 
     button {
