@@ -1,3 +1,4 @@
+
 // PAYSMART DATA
 
 function loadData(key, fallback) {
@@ -13,10 +14,7 @@ let walletBalance = Number(loadData("walletBalance", 0));
 let transactions = loadData("transactions", []);
 let expenses = loadData("expenses", []);
 let qrHistory = loadData("qrHistory", []);
-let profile = loadData("profile", {
-    name: "User",
-    email: ""
-});
+let profile = loadData("profile", { name: "User", email: "" });
 let monthlyBudget = Number(loadData("monthlyBudget", 0));
 let categoryBudgets = loadData("categoryBudgets", {});
 let demoPin = localStorage.getItem("demoPin") || "1234";
@@ -37,7 +35,7 @@ function saveData() {
 }
 
 
-// HELPERS
+// COMMON FUNCTIONS
 
 function money(amount) {
     return "₹" + Number(amount || 0).toFixed(2);
@@ -68,15 +66,18 @@ function isThisMonth(dateValue) {
         date.getFullYear() === now.getFullYear();
 }
 
+
+// NAVIGATION
+
 function showSection(sectionId) {
     document.querySelectorAll(".page").forEach(function (page) {
         page.classList.remove("active");
     });
 
-    const selected = document.getElementById(sectionId);
+    const section = document.getElementById(sectionId);
 
-    if (selected) {
-        selected.classList.add("active");
+    if (section) {
+        section.classList.add("active");
     }
 
     updateApp();
@@ -90,7 +91,7 @@ function addMoney() {
     const amount = Number(input.value);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
+        alert("Enter a valid amount.");
         return;
     }
 
@@ -104,14 +105,15 @@ function addMoney() {
     });
 
     input.value = "";
+
     saveData();
     updateApp();
 
-    alert(money(amount) + " added to your demo wallet.");
+    alert(money(amount) + " added successfully.");
 }
 
 
-// SEND MONEY - DEMO ONLY
+// SEND MONEY - DEMO
 
 function sendMoney() {
     const nameInput = document.getElementById("receiverName");
@@ -121,12 +123,12 @@ function sendMoney() {
     const amount = Number(amountInput.value);
 
     if (!name) {
-        alert("Please enter receiver name.");
+        alert("Enter receiver name.");
         return;
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
+        alert("Enter a valid amount.");
         return;
     }
 
@@ -150,11 +152,11 @@ function sendMoney() {
     saveData();
     updateApp();
 
-    alert("Demo transaction completed. No real money was transferred.");
+    alert("Demo transaction successful. No real money was transferred.");
 }
 
 
-// ADD EXPENSE
+// EXPENSE TRACKER
 
 function addExpense() {
     const titleInput = document.getElementById("expenseTitle");
@@ -166,12 +168,12 @@ function addExpense() {
     const category = categoryInput.value;
 
     if (!title) {
-        alert("Please enter expense description.");
+        alert("Enter expense description.");
         return;
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid expense amount.");
+        alert("Enter a valid expense amount.");
         return;
     }
 
@@ -205,9 +207,6 @@ function addExpense() {
     alert("Expense added successfully.");
 }
 
-
-// DISPLAY EXPENSES
-
 function updateExpenses() {
     const list = document.getElementById("expenseList");
 
@@ -229,7 +228,7 @@ function updateExpenses() {
 }
 
 function deleteExpense(index) {
-    if (!confirm("Delete this expense? The wallet balance will be refunded in this demo.")) {
+    if (!confirm("Delete this expense and refund the demo wallet?")) {
         return;
     }
 
@@ -263,15 +262,15 @@ function updateTransactions() {
         return;
     }
 
-    list.innerHTML = transactions.map(function (transaction) {
-        const amount = Number(transaction.amount);
-        const className = amount >= 0 ? "amount-positive" : "amount-negative";
+    list.innerHTML = transactions.map(function (item) {
+        const amount = Number(item.amount);
+        const color = amount >= 0 ? "amount-positive" : "amount-negative";
 
         return `
             <div class="item">
-                <strong>${escapeHTML(transaction.type)}</strong>
-                <small>${escapeHTML(transaction.name)} | ${escapeHTML(transaction.date)}</small>
-                <p class="${className}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
+                <strong>${escapeHTML(item.type)}</strong>
+                <small>${escapeHTML(item.name)} | ${escapeHTML(item.date)}</small>
+                <p class="${color}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
             </div>
         `;
     }).join("");
@@ -281,9 +280,9 @@ function filterTransactions() {
     const search = document.getElementById("transactionSearch").value.toLowerCase();
     const list = document.getElementById("transactionList");
 
-    const filtered = transactions.filter(function (transaction) {
-        return String(transaction.type).toLowerCase().includes(search) ||
-            String(transaction.name).toLowerCase().includes(search);
+    const filtered = transactions.filter(function (item) {
+        return String(item.type).toLowerCase().includes(search) ||
+            String(item.name).toLowerCase().includes(search);
     });
 
     if (filtered.length === 0) {
@@ -291,15 +290,15 @@ function filterTransactions() {
         return;
     }
 
-    list.innerHTML = filtered.map(function (transaction) {
-        const amount = Number(transaction.amount);
-        const className = amount >= 0 ? "amount-positive" : "amount-negative";
+    list.innerHTML = filtered.map(function (item) {
+        const amount = Number(item.amount);
+        const color = amount >= 0 ? "amount-positive" : "amount-negative";
 
         return `
             <div class="item">
-                <strong>${escapeHTML(transaction.type)}</strong>
-                <small>${escapeHTML(transaction.name)} | ${escapeHTML(transaction.date)}</small>
-                <p class="${className}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
+                <strong>${escapeHTML(item.type)}</strong>
+                <small>${escapeHTML(item.name)} | ${escapeHTML(item.date)}</small>
+                <p class="${color}">${amount >= 0 ? "+" : ""}${money(amount)}</p>
             </div>
         `;
     }).join("");
@@ -312,7 +311,7 @@ function startScanner() {
     const result = document.getElementById("scanResult");
 
     if (typeof Html5Qrcode === "undefined") {
-        result.textContent = "QR scanner library could not load. Check your internet connection.";
+        result.textContent = "Scanner library not loaded. Check internet connection.";
         return;
     }
 
@@ -338,12 +337,10 @@ function startScanner() {
             updateQRHistory();
             stopScanner();
         },
-        function () {
-            // Waiting for a QR code.
-        }
-    ).catch(function (error) {
+        function () {}
+    ).catch(function () {
         scanner = null;
-        result.textContent = "Could not start camera. Check camera permission and try again.";
+        result.textContent = "Camera could not start. Check camera permission and HTTPS.";
     });
 }
 
@@ -358,9 +355,7 @@ function stopScanner() {
 
     currentScanner.stop().then(function () {
         return currentScanner.clear();
-    }).catch(function () {
-        // Scanner may already be stopped.
-    });
+    }).catch(function () {});
 
     document.getElementById("scanResult").textContent = "Scanner stopped.";
 }
@@ -384,9 +379,10 @@ function updateQRHistory() {
 }
 
 function clearQRHistory() {
-    if (!confirm("Clear all QR scan history?")) return;
+    if (!confirm("Clear QR history?")) return;
 
     qrHistory = [];
+
     saveData();
     updateQRHistory();
 }
@@ -403,8 +399,8 @@ function getMonthlyExpenses() {
 function updateReport() {
     const monthly = getMonthlyExpenses();
 
-    const total = monthly.reduce(function (sum, expense) {
-        return sum + Number(expense.amount);
+    const total = monthly.reduce(function (sum, item) {
+        return sum + Number(item.amount);
     }, 0);
 
     document.getElementById("monthlyTotal").textContent = money(total);
@@ -412,9 +408,9 @@ function updateReport() {
 
     const categories = {};
 
-    monthly.forEach(function (expense) {
-        categories[expense.category] =
-            (categories[expense.category] || 0) + Number(expense.amount);
+    monthly.forEach(function (item) {
+        categories[item.category] =
+            (categories[item.category] || 0) + Number(item.amount);
     });
 
     const report = document.getElementById("categoryReport");
@@ -435,7 +431,7 @@ function updateReport() {
 }
 
 
-// MONTHLY BUDGET
+// BUDGET MANAGEMENT
 
 function saveBudget() {
     const amount = Number(document.getElementById("monthlyBudgetInput").value);
@@ -446,6 +442,7 @@ function saveBudget() {
     }
 
     monthlyBudget = amount;
+
     saveData();
     updateApp();
 
@@ -480,36 +477,33 @@ function updateBudget() {
 
     const monthly = getMonthlyExpenses();
 
-    const total = monthly.reduce(function (sum, expense) {
-        return sum + Number(expense.amount);
+    const total = monthly.reduce(function (sum, item) {
+        return sum + Number(item.amount);
     }, 0);
 
-    const status = document.getElementById("budgetStatus");
+    const remaining = monthlyBudget - total;
 
-    if (monthlyBudget > 0) {
-        const remaining = monthlyBudget - total;
+    document.getElementById("budgetStatus").textContent =
+        monthlyBudget > 0
+            ? (remaining >= 0
+                ? "Remaining budget: " + money(remaining)
+                : "Over budget by " + money(Math.abs(remaining)))
+            : "Set a monthly budget to track spending.";
 
-        status.textContent = remaining >= 0
-            ? "Remaining budget: " + money(remaining)
-            : "You are over budget by " + money(Math.abs(remaining));
-    } else {
-        status.textContent = "Set a monthly budget to track spending.";
-    }
+    const list = document.getElementById("categoryBudgetList");
 
-    const categoryList = document.getElementById("categoryBudgetList");
-
-    categoryList.innerHTML = Object.keys(categoryBudgets).map(function (category) {
+    list.innerHTML = Object.keys(categoryBudgets).map(function (category) {
         const spent = monthly
-            .filter(function (expense) {
-                return expense.category === category;
+            .filter(function (item) {
+                return item.category === category;
             })
-            .reduce(function (sum, expense) {
-                return sum + Number(expense.amount);
+            .reduce(function (sum, item) {
+                return sum + Number(item.amount);
             }, 0);
 
         const budget = Number(categoryBudgets[category]);
         const percent = budget > 0
-            ? Math.min((spent / budget) * 100, 100)
+            ? Math.min(spent / budget * 100, 100)
             : 0;
 
         return `
@@ -532,7 +526,7 @@ function saveProfile() {
     const email = document.getElementById("profileEmail").value.trim();
 
     if (!name) {
-        alert("Please enter your name.");
+        alert("Enter your name.");
         return;
     }
 
@@ -560,14 +554,14 @@ function updateProfile() {
 }
 
 
-// DEMO PIN
+// CHANGE DEMO PIN
 
 function changePin() {
     const oldPin = document.getElementById("oldPin").value;
     const newPin = document.getElementById("newPin").value;
 
     if (oldPin !== demoPin) {
-        alert("Current PIN is incorrect.");
+        alert("Incorrect current PIN.");
         return;
     }
 
@@ -577,6 +571,7 @@ function changePin() {
     }
 
     demoPin = newPin;
+
     saveData();
 
     document.getElementById("oldPin").value = "";
@@ -608,13 +603,8 @@ function exportCSV() {
 
     const rows = [
         ["Type", "Name", "Amount", "Date"],
-        ...transactions.map(function (transaction) {
-            return [
-                transaction.type,
-                transaction.name,
-                transaction.amount,
-                transaction.date
-            ];
+        ...transactions.map(function (item) {
+            return [item.type, item.name, item.amount, item.date];
         })
     ];
 
@@ -672,11 +662,10 @@ function downloadBackup() {
 // RESTORE BACKUP
 
 function restoreBackup() {
-    const fileInput = document.getElementById("restoreFile");
-    const file = fileInput.files[0];
+    const file = document.getElementById("restoreFile").files[0];
 
     if (!file) {
-        alert("Please select a backup JSON file.");
+        alert("Select a backup JSON file.");
         return;
     }
 
@@ -695,12 +684,13 @@ function restoreBackup() {
                 !Array.isArray(backup.qrHistory) ||
                 !backup.profile ||
                 typeof backup.profile !== "object" ||
+                !backup.categoryBudgets ||
                 typeof backup.categoryBudgets !== "object"
             ) {
                 throw new Error("Invalid backup");
             }
 
-            if (!confirm("Restore this backup? Current PaySmart data will be replaced.")) {
+            if (!confirm("Replace current demo data with this backup?")) {
                 return;
             }
 
@@ -718,7 +708,7 @@ function restoreBackup() {
 
             alert("Backup restored successfully.");
         } catch (error) {
-            alert("Invalid backup file. Please select a PaySmart backup.");
+            alert("Invalid PaySmart backup file.");
         }
     };
 
@@ -729,9 +719,7 @@ function restoreBackup() {
 // RESET DEMO DATA
 
 function resetDemoData() {
-    if (!confirm("Are you sure? This will permanently clear PaySmart demo data from this browser.")) {
-        return;
-    }
+    if (!confirm("Clear all PaySmart demo data?")) return;
 
     walletBalance = 0;
     transactions = [];
@@ -745,7 +733,7 @@ function resetDemoData() {
     saveData();
     updateApp();
 
-    alert("PaySmart demo data has been reset.");
+    alert("Demo data reset successfully.");
 }
 
 
@@ -755,10 +743,13 @@ function updateDashboard() {
     document.getElementById("dashboardBalance").textContent =
         money(walletBalance);
 
-    document.getElementById("dashboardExpenses").textContent =
-        money(getMonthlyExpenses().reduce(function (sum, expense) {
-            return sum + Number(expense.amount);
-        }, 0));
+    const monthly = getMonthlyExpenses();
+
+    const total = monthly.reduce(function (sum, item) {
+        return sum + Number(item.amount);
+    }, 0);
+
+    document.getElementById("dashboardExpenses").textContent = money(total);
 
     document.getElementById("dashboardTransactions").textContent =
         transactions.length;
@@ -769,12 +760,11 @@ function updateDashboard() {
 }
 
 function updateDashboardChart() {
-    const monthly = getMonthlyExpenses();
     const totals = {};
 
-    monthly.forEach(function (expense) {
-        totals[expense.category] =
-            (totals[expense.category] || 0) + Number(expense.amount);
+    getMonthlyExpenses().forEach(function (item) {
+        totals[item.category] =
+            (totals[item.category] || 0) + Number(item.amount);
     });
 
     const chart = document.getElementById("dashboardChart");
@@ -782,4 +772,22 @@ function updateDashboardChart() {
     const maximum = Math.max(...values, 1);
 
     if (values.length === 0) {
-      
+        chart.innerHTML = "No spending data available this month.";
+        return;
+    }
+
+    chart.innerHTML = Object.keys(totals).map(function (category) {
+        const amount = totals[category];
+        const percent = amount / maximum * 100;
+
+        return `
+            <div class="chart-row">
+                <div class="chart-label">
+                    <span>${escapeHTML(category)}</span>
+                    <strong>${money(amount)}</strong>
+                </div>
+                <div class="chart-track">
+                    <div class="chart-fill" style="width:${percent}%"></div>
+                </div>
+            </div>
+        
