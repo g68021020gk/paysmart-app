@@ -1,35 +1,187 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PaySmart - My Profile</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySmart</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 
 <body>
 
-    <div class="container">
+<header>
+    <h1>💳 PaySmart</h1>
+    <p>Your Smart Wallet</p>
+</header>
 
-        <h1>PaySmart</h1>
+<nav>
+    <button onclick="showSection('home')">Home</button>
+    <button onclick="showSection('wallet')">Wallet</button>
+    <button onclick="showSection('expenses')">Expenses</button>
+    <button onclick="showSection('scanner')">Scanner</button>
+    <button onclick="showSection('history')">History</button>
+    <button onclick="showSection('profile')">Profile</button>
+</nav>
 
-        <section class="profile-section">
+<main>
 
-            <h2>My Profile</h2>
+    <!-- HOME SECTION -->
+    <section id="home" class="page">
 
-            <div class="profile-icon">👤</div>
+        <h2>Welcome to PaySmart!</h2>
 
-            <h3 id="profileName">Gowtham</h3>
+        <div class="balance-card">
+            <p>Available Wallet Balance</p>
+            <h1 id="walletBalance">₹0.00</h1>
+        </div>
 
-            <p id="profileEmail">gowtham@example.com</p>
+        <div class="dashboard">
 
-            <button onclick="editProfile()">Edit Profile</button>
+            <div class="card">
+                <h3>Total Transactions</h3>
+                <p id="totalTransactions">0</p>
+            </div>
 
-        </section>
+            <div class="card">
+                <h3>Total Expenses</h3>
+                <p id="totalExpenses">₹0.00</p>
+            </div>
 
-        <div class="form-section" id="editForm">
+        </div>
 
-            <h2>Edit Profile</h2>
+        <h3>Quick Actions</h3>
+
+        <div class="actions">
+            <button onclick="showSection('wallet')">Add Money</button>
+            <button onclick="showSection('send')">Send Money</button>
+            <button onclick="showSection('expenses')">Add Expense</button>
+            <button onclick="showSection('scanner')">Scan QR</button>
+            <button onclick="showSection('profile')">My Profile</button>
+        </div>
+
+    </section>
+
+
+    <!-- WALLET SECTION -->
+    <section id="wallet" class="page hidden">
+
+        <h2>My Wallet</h2>
+
+        <h3>Balance: <span id="walletBalance2">₹0.00</span></h3>
+
+        <input type="number" id="addAmount"
+            placeholder="Enter amount" min="0.01" step="0.01">
+
+        <button onclick="addMoney()">Add Money</button>
+
+    </section>
+
+
+    <!-- SEND MONEY SECTION -->
+    <section id="send" class="page hidden">
+
+        <h2>Send Money</h2>
+
+        <input type="text" id="receiverName"
+            placeholder="Enter receiver name">
+
+        <input type="number" id="sendAmount"
+            placeholder="Enter amount" min="0.01" step="0.01">
+
+        <button onclick="sendMoney()">Send Money</button>
+
+    </section>
+
+
+    <!-- EXPENSE SECTION -->
+    <section id="expenses" class="page hidden">
+
+        <h2>Expense Tracker</h2>
+
+        <input type="text" id="expenseName"
+            placeholder="Expense name">
+
+        <input type="number" id="expenseAmount"
+            placeholder="Enter amount" min="0.01" step="0.01">
+
+        <select id="expenseCategory">
+            <option value="">Select Category</option>
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <button onclick="addExpense()">Add Expense</button>
+
+        <h3>My Expenses</h3>
+        <ul id="expenseList"></ul>
+
+    </section>
+
+
+    <!-- QR SCANNER SECTION -->
+    <section id="scanner" class="page hidden">
+
+        <h2>QR Code Scanner</h2>
+
+        <div id="reader"></div>
+
+        <button onclick="startScanner()">Start Scanner</button>
+        <button onclick="stopScanner()">Stop Scanner</button>
+
+        <h3>Scanned Result</h3>
+
+        <p id="qrResult">No QR code scanned yet.</p>
+
+        <button onclick="showSection('qrHistory')">
+            View QR History
+        </button>
+
+    </section>
+
+
+    <!-- QR HISTORY SECTION -->
+    <section id="qrHistory" class="page hidden">
+
+        <h2>QR Scan History</h2>
+
+        <ul id="qrHistoryList"></ul>
+
+        <button onclick="clearQRHistory()">Clear History</button>
+
+    </section>
+
+
+    <!-- TRANSACTION HISTORY -->
+    <section id="history" class="page hidden">
+
+        <h2>Transaction History</h2>
+
+        <ul id="transactionList"></ul>
+
+    </section>
+
+
+    <!-- PROFILE SECTION -->
+    <section id="profile" class="page hidden">
+
+        <h2>My Profile</h2>
+
+        <div class="profile-icon">👤</div>
+
+        <h3 id="profileName">Gowtham</h3>
+
+        <p id="profileEmail">gowtham@example.com</p>
+
+        <button onclick="editProfile()">Edit Profile</button>
+
+        <div id="editForm" class="hidden">
+
+            <h3>Edit Profile</h3>
 
             <input type="text" id="nameInput"
                 placeholder="Enter your name">
@@ -43,13 +195,11 @@
 
         </div>
 
-        <button class="back-button" onclick="goBack()">
-            Back to Home
-        </button>
+    </section>
 
-    </div>
+</main>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
