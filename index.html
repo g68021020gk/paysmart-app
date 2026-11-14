@@ -12,13 +12,13 @@
 
 <header>
     <h1>PaySmart</h1>
-    <button onclick="toggleDarkMode()">🌙 Theme</button>
+    <button onclick="toggleDarkMode()">Toggle Theme</button>
 </header>
 
 <nav>
     <button onclick="showSection('dashboard')">Dashboard</button>
     <button onclick="showSection('wallet')">Wallet</button>
-    <button onclick="showSection('send')">Send</button>
+    <button onclick="showSection('send')">Send Money</button>
     <button onclick="showSection('expenses')">Expenses</button>
     <button onclick="showSection('scanner')">QR Scanner</button>
     <button onclick="showSection('history')">History</button>
@@ -38,14 +38,17 @@
             <h3>Wallet Balance</h3>
             <p id="dashboardBalance">₹0.00</p>
         </div>
+
         <div class="card">
             <h3>Monthly Expenses</h3>
             <p id="dashboardExpenses">₹0.00</p>
         </div>
+
         <div class="card">
-            <h3>Transactions</h3>
+            <h3>Total Transactions</h3>
             <p id="dashboardTransactions">0</p>
         </div>
+
         <div class="card">
             <h3>Monthly Budget</h3>
             <p id="dashboardBudget">₹0.00</p>
@@ -53,7 +56,7 @@
     </div>
 
     <h3>Spending Chart</h3>
-    <div id="dashboardChart" class="panel">No spending data.</div>
+    <div id="dashboardChart" class="panel"></div>
 
     <h3>Spending Insights</h3>
     <div id="dashboardInsight" class="panel"></div>
@@ -64,6 +67,7 @@
 
 <section id="wallet" class="page">
     <h2>My Wallet</h2>
+
     <div class="card">
         <h3>Available Balance</h3>
         <p id="walletBalance">₹0.00</p>
@@ -76,9 +80,11 @@
 
 <section id="send" class="page">
     <h2>Send Money</h2>
-    <p>This is a demo transaction. No real money is transferred.</p>
+    <p>Demo only. No real money is transferred.</p>
+
     <input type="text" id="receiverName" placeholder="Receiver name">
     <input type="number" id="sendAmount" placeholder="Enter amount">
+
     <button onclick="sendMoney()">Send Demo Money</button>
 </section>
 
@@ -105,25 +111,32 @@
 </section>
 
 <section id="scanner" class="page">
-    <h2>QR Code Scanner</h2>
+    <h2>QR Scanner</h2>
+
     <div id="reader"></div>
+
     <button onclick="startScanner()">Start Scanner</button>
     <button onclick="stopScanner()">Stop Scanner</button>
 
-    <p id="scanResult">Scan a QR code to see its text.</p>
+    <p id="scanResult">Scan a QR code.</p>
 
     <h3>QR Scan History</h3>
     <div id="qrHistoryList"></div>
+
     <button class="danger" onclick="clearQRHistory()">Clear QR History</button>
 </section>
 
 <section id="history" class="page">
     <h2>Transaction History</h2>
-    <input type="text" id="transactionSearch"
-        placeholder="Search transactions..."
+
+    <input
+        type="text"
+        id="transactionSearch"
+        placeholder="Search transactions"
         oninput="filterTransactions()">
 
     <div id="transactionList"></div>
+
     <button onclick="exportCSV()">Download CSV</button>
 </section>
 
@@ -131,7 +144,7 @@
     <h2>Monthly Expense Report</h2>
 
     <div class="card">
-        <h3>Total Monthly Expenses</h3>
+        <h3>Total Expenses</h3>
         <p id="monthlyTotal">₹0.00</p>
         <p>Number of expenses: <span id="monthlyCount">0</span></p>
     </div>
@@ -144,13 +157,16 @@
     <h2>Budget Management</h2>
 
     <h3>Monthly Budget</h3>
+
     <input type="number" id="monthlyBudgetInput"
         placeholder="Enter monthly budget">
+
     <button onclick="saveBudget()">Save Monthly Budget</button>
 
     <p id="budgetStatus"></p>
 
     <h3>Category Budget</h3>
+
     <select id="budgetCategory">
         <option>Food</option>
         <option>Travel</option>
@@ -186,26 +202,32 @@
     <h2>Settings</h2>
 
     <h3>Change Demo PIN</h3>
-    <input type="password" id="oldPin" placeholder="Current 4-digit PIN"
-        maxlength="4">
-    <input type="password" id="newPin" placeholder="New 4-digit PIN"
-        maxlength="4">
+
+    <input type="password" id="oldPin"
+        placeholder="Current PIN" maxlength="4">
+
+    <input type="password" id="newPin"
+        placeholder="New PIN" maxlength="4">
+
     <button onclick="changePin()">Change PIN</button>
 
     <h3>Backup and Restore</h3>
+
     <button onclick="downloadBackup()">Download Backup</button>
 
     <input type="file" id="restoreFile" accept=".json">
+
     <button onclick="restoreBackup()">Restore Backup</button>
 
-    <h3>Reset Application</h3>
-    <button class="danger" onclick="resetDemoData()">Reset Demo Data</button>
+    <h3>Reset Demo Data</h3>
+
+    <button class="danger" onclick="resetDemoData()">Reset Data</button>
 </section>
 
 </main>
 
 <footer>
-    <p>PaySmart Demo Wallet | For Learning Purposes Only</p>
+    <p>PaySmart Demo Wallet | Learning Project</p>
 </footer>
 
 <script src="script.js"></script>
