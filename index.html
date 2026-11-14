@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,237 +8,254 @@
 </head>
 <body>
 
-<header>
-    <h1>PaySmart</h1>
-    <p>Smart Demo Wallet</p>
+<header class="topbar">
+    <div>
+        <h1>PaySmart</h1>
+        <p>Smart demo wallet</p>
+    </div>
+    <button class="icon-button" onclick="toggleDarkMode()">🌙</button>
 </header>
 
-<nav>
+<nav class="navigation">
     <button onclick="showSection('dashboard')">Dashboard</button>
     <button onclick="showSection('wallet')">Wallet</button>
-    <button onclick="showSection('addMoney')">Add Money</button>
-    <button onclick="showSection('sendMoney')">Send Money</button>
+    <button onclick="showSection('send')">Send</button>
     <button onclick="showSection('expenses')">Expenses</button>
     <button onclick="showSection('scanner')">QR Scanner</button>
-    <button onclick="showSection('qrHistory')">QR History</button>
-    <button onclick="showSection('history')">Transactions</button>
-    <button onclick="showSection('report')">Reports</button>
+    <button onclick="showSection('history')">History</button>
+    <button onclick="showSection('reports')">Reports</button>
     <button onclick="showSection('budget')">Budget</button>
     <button onclick="showSection('profile')">Profile</button>
     <button onclick="showSection('settings')">Settings</button>
-    <button onclick="showSection('backup')">Backup & Restore</button>
 </nav>
 
 <main>
 
-<section id="dashboard" class="section active">
-    <h2>Dashboard</h2>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="page active">
+        <h2>Dashboard</h2>
 
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <h3>Wallet Balance</h3>
-            <h2 id="dashboardBalance">₹0.00</h2>
+        <div class="balance-card">
+            <p>Wallet Balance</p>
+            <h1 id="dashboardBalance">₹0.00</h1>
+            <button onclick="showSection('wallet')">Manage Wallet</button>
         </div>
 
-        <div class="dashboard-card">
-            <h3>Monthly Expenses</h3>
-            <h2 id="dashboardExpenses">₹0.00</h2>
+        <div class="card-grid">
+            <div class="stat-card">
+                <p>Total Expenses</p>
+                <h3 id="dashboardExpenses">₹0.00</h3>
+            </div>
+            <div class="stat-card">
+                <p>Total Transactions</p>
+                <h3 id="dashboardTransactions">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Monthly Budget</p>
+                <h3 id="dashboardBudget">₹0.00</h3>
+            </div>
         </div>
 
-        <div class="dashboard-card">
-            <h3>Transactions</h3>
-            <h2 id="dashboardTransactions">0</h2>
+        <div class="panel">
+            <h3>Monthly Spending</h3>
+            <div id="dashboardChart" class="chart"></div>
         </div>
 
-        <div class="dashboard-card">
+        <div class="panel">
+            <h3>Spending Insights</h3>
+            <p id="dashboardInsight">Your spending information will appear here.</p>
+        </div>
+
+        <div class="panel">
+            <h3>Recent Transactions</h3>
+            <div id="recentTransactions">No transactions yet.</div>
+        </div>
+    </section>
+
+    <!-- WALLET -->
+    <section id="wallet" class="page">
+        <h2>My Wallet</h2>
+
+        <div class="balance-card">
+            <p>Available Demo Balance</p>
+            <h1 id="walletBalance">₹0.00</h1>
+        </div>
+
+        <div class="panel">
+            <h3>Add Money</h3>
+            <input type="number" id="addAmount" placeholder="Enter amount" min="1">
+            <button onclick="addMoney()">Add Money</button>
+        </div>
+    </section>
+
+    <!-- SEND MONEY -->
+    <section id="send" class="page">
+        <h2>Send Money</h2>
+        <div class="panel">
+            <p class="notice">Demo feature only. No real money will be transferred.</p>
+            <input type="text" id="receiverName" placeholder="Receiver name">
+            <input type="number" id="sendAmount" placeholder="Enter amount" min="1">
+            <button onclick="sendMoney()">Send Demo Money</button>
+        </div>
+    </section>
+
+    <!-- EXPENSES -->
+    <section id="expenses" class="page">
+        <h2>Expense Tracker</h2>
+
+        <div class="panel">
+            <input type="text" id="expenseTitle" placeholder="Expense description">
+            <input type="number" id="expenseAmount" placeholder="Amount" min="1">
+
+            <select id="expenseCategory">
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Education">Education</option>
+                <option value="Bills">Bills</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button onclick="addExpense()">Add Expense</button>
+        </div>
+
+        <div class="panel">
+            <h3>Expense List</h3>
+            <div id="expenseList">No expenses yet.</div>
+        </div>
+    </section>
+
+    <!-- QR SCANNER -->
+    <section id="scanner" class="page">
+        <h2>QR Code Scanner</h2>
+        <p class="notice">Scan QR codes for information only. This does not make payments.</p>
+
+        <div class="panel">
+            <div id="reader"></div>
+            <button onclick="startScanner()">Start Scanner</button>
+            <button class="secondary" onclick="stopScanner()">Stop Scanner</button>
+            <p id="scanResult">Scanner is stopped.</p>
+        </div>
+
+        <div class="panel">
+            <h3>QR Scan History</h3>
+            <button class="danger" onclick="clearQRHistory()">Clear QR History</button>
+            <div id="qrHistoryList">No QR scans yet.</div>
+        </div>
+    </section>
+
+    <!-- TRANSACTION HISTORY -->
+    <section id="history" class="page">
+        <h2>Transaction History</h2>
+
+        <div class="panel">
+            <input type="text" id="transactionSearch"
+                   placeholder="Search transactions..."
+                   oninput="filterTransactions()">
+
+            <button onclick="exportCSV()">Export Transactions CSV</button>
+            <div id="transactionList">No transactions yet.</div>
+        </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="reports" class="page">
+        <h2>Monthly Expense Report</h2>
+
+        <div class="card-grid">
+            <div class="stat-card">
+                <p>This Month's Expenses</p>
+                <h3 id="monthlyTotal">₹0.00</h3>
+            </div>
+            <div class="stat-card">
+                <p>Number of Expenses</p>
+                <h3 id="monthlyCount">0</h3>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Category Summary</h3>
+            <div id="categoryReport">No report available.</div>
+        </div>
+    </section>
+
+    <!-- BUDGET -->
+    <section id="budget" class="page">
+        <h2>Budget Management</h2>
+
+        <div class="panel">
             <h3>Monthly Budget</h3>
-            <h2 id="dashboardBudget">Not Set</h2>
+            <input type="number" id="monthlyBudgetInput"
+                   placeholder="Enter monthly budget" min="0">
+            <button onclick="saveBudget()">Save Monthly Budget</button>
+            <p id="budgetStatus"></p>
         </div>
-    </div>
 
-    <div class="card">
-        <h3>Category-wise Spending</h3>
-        <div id="dashboardChart"></div>
-    </div>
+        <div class="panel">
+            <h3>Category Budget</h3>
+            <select id="budgetCategory">
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Education">Education</option>
+                <option value="Bills">Bills</option>
+                <option value="Other">Other</option>
+            </select>
 
-    <div class="card">
-        <h3>Spending Insights</h3>
-        <div id="spendingInsights"></div>
-    </div>
+            <input type="number" id="categoryBudgetInput"
+                   placeholder="Enter category budget" min="0">
+            <button onclick="saveCategoryBudget()">Save Category Budget</button>
+            <div id="categoryBudgetList"></div>
+        </div>
+    </section>
 
-    <div class="card">
-        <h3>Recent Transactions</h3>
-        <ul id="dashboardRecentTransactions"></ul>
-    </div>
-</section>
+    <!-- PROFILE -->
+    <section id="profile" class="page">
+        <h2>My Profile</h2>
 
-<section id="wallet" class="section">
-    <h2>My Wallet</h2>
-    <div class="card">
-        <h3>Wallet Balance</h3>
-        <h1 id="walletBalance">₹0.00</h1>
-    </div>
-    <div class="card">
-        <h3>Total Expenses</h3>
-        <h2 id="totalExpenses">₹0.00</h2>
-    </div>
-</section>
+        <div class="panel">
+            <input type="text" id="profileName" placeholder="Your name">
+            <input type="email" id="profileEmail" placeholder="Email address">
+            <button onclick="saveProfile()">Save Profile</button>
+            <div id="profileDetails"></div>
+        </div>
+    </section>
 
-<section id="addMoney" class="section">
-    <h2>Add Money</h2>
-    <div class="card">
-        <input type="number" id="addAmount" placeholder="Enter amount">
-        <button onclick="addMoney()">Add Money</button>
-    </div>
-</section>
+    <!-- SETTINGS -->
+    <section id="settings" class="page">
+        <h2>Settings</h2>
 
-<section id="sendMoney" class="section">
-    <h2>Send Money (Demo)</h2>
-    <div class="card">
-        <input type="text" id="receiverName" placeholder="Receiver name">
-        <input type="number" id="sendAmount" placeholder="Enter amount">
-        <button onclick="sendMoney()">Send Demo Money</button>
-        <p>This is only a demo. No real money is transferred.</p>
-    </div>
-</section>
+        <div class="panel">
+            <h3>Demo PIN</h3>
+            <p>Default demo PIN: <strong>1234</strong></p>
+            <input type="password" id="oldPin" placeholder="Current PIN">
+            <input type="password" id="newPin" placeholder="New 4-digit PIN">
+            <button onclick="changePin()">Change PIN</button>
+        </div>
 
-<section id="expenses" class="section">
-    <h2>Expense Tracker</h2>
-    <div class="card">
-        <input type="text" id="expenseName" placeholder="Expense name">
-        <input type="number" id="expenseAmount" placeholder="Amount">
+        <div class="panel">
+            <h3>Backup and Restore</h3>
+            <button onclick="downloadBackup()">Download Backup</button>
+            <input type="file" id="restoreFile" accept=".json">
+            <button onclick="restoreBackup()">Restore Backup</button>
+        </div>
 
-        <select id="expenseCategory">
-            <option value="Food">Food</option>
-            <option value="Travel">Travel</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Education">Education</option>
-            <option value="Bills">Bills</option>
-            <option value="Other">Other</option>
-        </select>
+        <div class="panel">
+            <h3>Appearance</h3>
+            <button onclick="toggleDarkMode()">Switch Dark Mode</button>
+        </div>
 
-        <button onclick="addExpense()">Add Expense</button>
-    </div>
-
-    <h3>Expense List</h3>
-    <ul id="expenseList"></ul>
-</section>
-
-<section id="scanner" class="section">
-    <h2>QR Code Scanner</h2>
-    <div class="card">
-        <div id="reader"></div>
-        <p id="qrResult">Scan a QR code to see its result.</p>
-        <button onclick="startScanner()">Start Scanner</button>
-        <button onclick="stopScanner()">Stop Scanner</button>
-    </div>
-</section>
-
-<section id="qrHistory" class="section">
-    <h2>QR Scan History</h2>
-    <ul id="qrHistoryList"></ul>
-    <button onclick="clearQRHistory()">Clear QR History</button>
-</section>
-
-<section id="history" class="section">
-    <h2>Transaction History</h2>
-    <input type="text" id="transactionSearch"
-        placeholder="Search transactions"
-        oninput="filterTransactions()">
-    <ul id="transactionList"></ul>
-    <button onclick="exportCSV()">Download CSV</button>
-</section>
-
-<section id="report" class="section">
-    <h2>Monthly Expense Report</h2>
-    <h3 id="monthlyTotal">₹0.00</h3>
-    <div id="reportChart"></div>
-</section>
-
-<section id="budget" class="section">
-    <h2>Budget Planner</h2>
-
-    <div class="card">
-        <label>Monthly Budget</label>
-        <input type="number" id="monthlyBudget"
-            placeholder="Enter monthly budget">
-        <button onclick="saveBudget()">Save Budget</button>
-        <p id="budgetStatus"></p>
-    </div>
-
-    <div class="card">
-        <h3>Category Budgets</h3>
-
-        <select id="budgetCategory">
-            <option value="Food">Food</option>
-            <option value="Travel">Travel</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Education">Education</option>
-            <option value="Bills">Bills</option>
-            <option value="Other">Other</option>
-        </select>
-
-        <input type="number" id="categoryBudgetAmount"
-            placeholder="Category budget">
-
-        <button onclick="saveCategoryBudget()">Save Category Budget</button>
-        <div id="categoryBudgetList"></div>
-    </div>
-</section>
-
-<section id="profile" class="section">
-    <h2>My Profile</h2>
-    <div class="card">
-        <input type="text" id="profileName" placeholder="Your name">
-        <input type="email" id="profileEmail" placeholder="Your email">
-        <button onclick="saveProfile()">Save Profile</button>
-        <p id="profileMessage"></p>
-    </div>
-</section>
-
-<section id="settings" class="section">
-    <h2>Settings</h2>
-
-    <div class="card">
-        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-    </div>
-
-    <div class="card">
-        <h3>Demo PIN</h3>
-        <input type="password" id="currentPin"
-            placeholder="Current PIN">
-        <input type="password" id="newPin"
-            placeholder="New PIN">
-        <button onclick="changePin()">Change PIN</button>
-        <p id="pinMessage"></p>
-    </div>
-</section>
-
-<section id="backup" class="section">
-    <h2>Backup & Restore</h2>
-
-    <div class="card backup-card">
-        <h3>Download Backup</h3>
-        <p>Save your PaySmart demo data as a JSON file.</p>
-        <button onclick="downloadBackup()">Download Backup</button>
-    </div>
-
-    <div class="card backup-card">
-        <h3>Restore Backup</h3>
-        <p>Select a previously downloaded PaySmart backup file.</p>
-        <input type="file" id="restoreFile"
-            accept=".json,application/json">
-        <button onclick="restoreBackup()">Restore Data</button>
-        <p id="backupMessage"></p>
-    </div>
-
-    <p>Keep your backup file private. PaySmart is a demo application.</p>
-</section>
+        <div class="panel">
+            <h3>PaySmart Data</h3>
+            <p>Your demo information is stored in this browser.</p>
+            <button class="danger" onclick="resetDemoData()">Reset All Demo Data</button>
+        </div>
+    </section>
 
 </main>
 
 <footer>
-    <p>PaySmart Demo Wallet | No real transactions</p>
+    <p>PaySmart © 2026 | Demo Project</p>
 </footer>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
