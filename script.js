@@ -1,21 +1,13 @@
 // PAYSMART DATA
 
 let walletBalance = Number(localStorage.getItem("walletBalance")) || 0;
-
 let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
-
 let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
-
 let qrHistory = JSON.parse(localStorage.getItem("qrHistory") || "[]");
-
 let profile = JSON.parse(localStorage.getItem("profile") || '{"name":"User","email":""}');
-
 let monthlyBudget = Number(localStorage.getItem("monthlyBudget")) || 0;
-
 let categoryBudgets = JSON.parse(localStorage.getItem("categoryBudgets") || "{}");
-
 let appPin = localStorage.getItem("appPin") || "1234";
-
 let scanner = null;
 
 
@@ -38,6 +30,15 @@ function today() {
     return new Date().toLocaleString();
 }
 
+function dateISO() {
+    let now = new Date();
+    let year = now.getFullYear();
+    let month = String(now.getMonth() + 1).padStart(2, "0");
+    let day = String(now.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+}
+
 function isThisMonth(dateValue) {
     let date = new Date(dateValue);
     let now = new Date();
@@ -57,17 +58,16 @@ function showSection(sectionId) {
 
     document.getElementById(sectionId).classList.add("active");
 
+    if (sectionId === "transactions") {
+        filterTransactions();
+    }
+
     if (sectionId === "report") {
         updateReport();
     }
 
     if (sectionId === "budget") {
         updateBudget();
-    }
-
-    if (sectionId === "scanner") {
-        document.getElementById("scanResult").textContent =
-            "Press Start Scanner to scan a QR code.";
     }
 }
 
@@ -87,7 +87,8 @@ function addMoney() {
     transactions.unshift({
         type: "Money Added",
         amount: amount,
-        date: today()
+        date: today(),
+        dateISO: dateISO()
     });
 
     document.getElementById("addAmount").value = "";
@@ -125,7 +126,8 @@ function sendMoney() {
     transactions.unshift({
         type: "Sent to " + name,
         amount: amount,
-        date: today()
+        date: today(),
+        dateISO: dateISO()
     });
 
     document.getElementById("receiverName").value = "";
@@ -159,7 +161,8 @@ function addExpense() {
         name: name,
         amount: amount,
         category: category,
-        date: today()
+        date: today(),
+        dateISO: dateISO()
     };
 
     expenses.unshift(expense);
@@ -167,7 +170,8 @@ function addExpense() {
     transactions.unshift({
         type: "Expense: " + name,
         amount: amount,
-        date: expense.date
+        date: expense.date,
+        dateISO: expense.dateISO
     });
 
     document.getElementById("expenseName").value = "";
@@ -198,13 +202,11 @@ function saveBudget() {
     alert("Monthly budget saved!");
 }
 
-
 function getMonthlyExpenses() {
     return expenses.filter(function(expense) {
-        return isThisMonth(expense.date);
+        return isThisMonth(expense.dateISO || expense.date);
     });
 }
-
 
 function saveCategoryBudget() {
     let category = document.getElementById("budgetCategory").value;
@@ -225,7 +227,6 @@ function saveCategoryBudget() {
     alert("Category budget saved!");
 }
 
-
 function updateBudget() {
     let monthlyExpenses = getMonthlyExpenses();
 
@@ -235,17 +236,10 @@ function updateBudget() {
 
     let remaining = monthlyBudget - spent;
 
-    document.getElementById("monthlyBudget").value =
-        monthlyBudget || "";
-
-    document.getElementById("budgetAmount").textContent =
-        monthlyBudget.toFixed(2);
-
-    document.getElementById("budgetSpent").textContent =
-        spent.toFixed(2);
-
-    document.getElementById("budgetRemaining").textContent =
-        remaining.toFixed(2);
+    document.getElementById("monthlyBudget").value = monthlyBudget || "";
+    document.getElementById("budgetAmount").textContent = monthlyBudget.toFixed(2);
+    document.getElementById("budgetSpent").textContent = spent.toFixed(2);
+    document.getElementById("budgetRemaining").textContent = remaining.toFixed(2);
 
     let message = "";
 
@@ -264,10 +258,8 @@ function updateBudget() {
     updateCategoryBudgets(monthlyExpenses);
 }
 
-
 function updateCategoryBudgets(monthlyExpenses) {
     let container = document.getElementById("categoryBudgetList");
-
     container.innerHTML = "";
 
     Object.keys(categoryBudgets).forEach(function(category) {
@@ -317,7 +309,7 @@ function updateCategoryBudgets(monthlyExpenses) {
 
 function startScanner() {
     if (typeof Html5Qrcode === "undefined") {
-        alert("QR scanner library could not load. Check your internet connection.");
+        alert("QR scanner library could not load. Check internet connection.");
         return;
     }
 
@@ -335,8 +327,7 @@ function startScanner() {
             qrbox: { width: 220, height: 220 }
         },
         function(decodedText) {
-            document.getElementById("scanResult").textContent =
-                decodedText;
+            document.getElementById("scanResult").textContent = decodedText;
 
             qrHistory.unshift({
                 result: decodedText,
@@ -345,18 +336,14 @@ function startScanner() {
 
             saveData();
             updateQRHistory();
-
             stopScanner();
         },
-        function(errorMessage) {
-            // Waiting for a QR code.
-        }
+        function(errorMessage) {}
     ).catch(function(error) {
         scanner = null;
-        alert("Unable to start camera. Check camera permission and use HTTPS.");
+        alert("Unable to start camera. Check camera permission and HTTPS.");
     });
 }
-
 
 function stopScanner() {
     if (!scanner) {
@@ -378,7 +365,6 @@ function stopScanner() {
 
 function updateQRHistory() {
     let list = document.getElementById("qrHistoryList");
-
     list.innerHTML = "";
 
     if (qrHistory.length === 0) {
@@ -393,7 +379,6 @@ function updateQRHistory() {
     });
 }
 
-
 function clearQRHistory() {
     if (!confirm("Clear all QR scan history?")) {
         return;
@@ -406,19 +391,73 @@ function clearQRHistory() {
 }
 
 
-// TRANSACTION HISTORY
+// TRANSACTION HISTORY AND FILTERING
 
-function updateTransactions() {
+function getTransactionISO(item) {
+    if (item.dateISO) {
+        return item.dateISO;
+    }
+
+    let parsed = new Date(item.date);
+
+    if (isNaN(parsed.getTime())) {
+        return "";
+    }
+
+    let year = parsed.getFullYear();
+    let month = String(parsed.getMonth() + 1).padStart(2, "0");
+    let day = String(parsed.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+}
+
+function filterTransactions() {
+    let search = document.getElementById("searchTransaction")
+        .value.trim().toLowerCase();
+
+    let type = document.getElementById("transactionType").value;
+    let selectedDate = document.getElementById("transactionDate").value;
+
+    let filtered = transactions.filter(function(item) {
+        let matchesSearch =
+            String(item.type).toLowerCase().includes(search);
+
+        let matchesType = true;
+
+        if (type === "Money Added") {
+            matchesType = item.type === "Money Added";
+        } else if (type === "Sent") {
+            matchesType = item.type.startsWith("Sent to ");
+        } else if (type === "Expense") {
+            matchesType = item.type.startsWith("Expense:");
+        }
+
+        let matchesDate = true;
+
+        if (selectedDate) {
+            matchesDate = getTransactionISO(item) === selectedDate;
+        }
+
+        return matchesSearch && matchesType && matchesDate;
+    });
+
+    displayTransactions(filtered);
+
+    document.getElementById("filterResult").textContent =
+        "Showing " + filtered.length + " of " +
+        transactions.length + " transactions.";
+}
+
+function displayTransactions(items) {
     let list = document.getElementById("transactionList");
-
     list.innerHTML = "";
 
-    if (transactions.length === 0) {
-        list.textContent = "No transactions yet.";
+    if (items.length === 0) {
+        list.textContent = "No matching transactions found.";
         return;
     }
 
-    transactions.forEach(function(item) {
+    items.forEach(function(item) {
         let li = document.createElement("li");
 
         li.textContent =
@@ -430,6 +469,14 @@ function updateTransactions() {
     });
 }
 
+function clearTransactionFilters() {
+    document.getElementById("searchTransaction").value = "";
+    document.getElementById("transactionType").value = "all";
+    document.getElementById("transactionDate").value = "";
+
+    filterTransactions();
+}
+
 
 // CSV DOWNLOAD
 
@@ -439,16 +486,10 @@ function downloadTransactions() {
         return;
     }
 
-    let rows = [
-        ["Transaction Type", "Amount", "Date"]
-    ];
+    let rows = [["Transaction Type", "Amount", "Date"]];
 
     transactions.forEach(function(item) {
-        rows.push([
-            item.type,
-            item.amount,
-            item.date
-        ]);
+        rows.push([item.type, item.amount, item.date]);
     });
 
     let csv = rows.map(function(row) {
@@ -477,7 +518,7 @@ function downloadTransactions() {
 }
 
 
-// MONTHLY EXPENSE REPORT AND CHART
+// MONTHLY EXPENSE REPORT
 
 function updateReport() {
     let monthlyExpenses = getMonthlyExpenses();
@@ -486,8 +527,7 @@ function updateReport() {
         return sum + Number(expense.amount);
     }, 0);
 
-    document.getElementById("monthlyTotal").textContent =
-        total.toFixed(2);
+    document.getElementById("monthlyTotal").textContent = total.toFixed(2);
 
     let categories = {};
 
@@ -499,7 +539,6 @@ function updateReport() {
     });
 
     let chart = document.getElementById("expenseChart");
-
     chart.innerHTML = "";
 
     let names = Object.keys(categories);
@@ -511,10 +550,7 @@ function updateReport() {
 
     names.forEach(function(category) {
         let amount = categories[category];
-
-        let percentage = total > 0
-            ? (amount / total) * 100
-            : 0;
+        let percentage = total > 0 ? (amount / total) * 100 : 0;
 
         let row = document.createElement("div");
         row.className = "chart-row";
@@ -541,7 +577,6 @@ function updateReport() {
         bar.appendChild(fill);
         row.appendChild(label);
         row.appendChild(bar);
-
         chart.appendChild(row);
     });
 }
@@ -559,7 +594,6 @@ function updateProfile() {
     document.getElementById("homeWelcome").textContent =
         "Welcome, " + (profile.name || "User") + "!";
 }
-
 
 function saveProfile() {
     let name = document.getElementById("editName").value.trim();
@@ -597,7 +631,6 @@ function changePin() {
     }
 
     appPin = newPin;
-
     localStorage.setItem("appPin", appPin);
 
     document.getElementById("oldPin").value = "";
@@ -622,7 +655,6 @@ function unlockApp() {
     }
 }
 
-
 function lockApp() {
     document.getElementById("lockScreen").classList.remove("hidden");
     document.getElementById("loginPin").value = "";
@@ -637,6 +669,31 @@ function toggleDarkMode() {
     let darkMode = document.body.classList.contains("dark");
 
     localStorage.setItem("darkMode", darkMode);
+}
+
+
+// UPDATE EXPENSE LIST
+
+function updateExpenseList() {
+    let list = document.getElementById("expenseList");
+    list.innerHTML = "";
+
+    if (expenses.length === 0) {
+        list.textContent = "No expenses added yet.";
+        return;
+    }
+
+    expenses.forEach(function(expense) {
+        let li = document.createElement("li");
+
+        li.textContent =
+            expense.name + " — ₹" +
+            Number(expense.amount).toFixed(2) +
+            " — " + expense.category +
+            " — " + expense.date;
+
+        list.appendChild(li);
+    });
 }
 
 
@@ -663,35 +720,11 @@ function updateApp() {
         transactions.length;
 
     updateExpenseList();
-    updateTransactions();
+    filterTransactions();
     updateQRHistory();
     updateProfile();
     updateBudget();
     updateReport();
-}
-
-
-function updateExpenseList() {
-    let list = document.getElementById("expenseList");
-
-    list.innerHTML = "";
-
-    if (expenses.length === 0) {
-        list.textContent = "No expenses added yet.";
-        return;
-    }
-
-    expenses.forEach(function(expense) {
-        let li = document.createElement("li");
-
-        li.textContent =
-            expense.name + " — ₹" +
-            Number(expense.amount).toFixed(2) +
-            " — " + expense.category +
-            " — " + expense.date;
-
-        list.appendChild(li);
-    });
 }
 
 
