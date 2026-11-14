@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,6 +36,7 @@
     <button onclick="showSection('transactions')">Transactions</button>
     <button onclick="showSection('report')">Reports</button>
     <button onclick="showSection('profile')">Profile</button>
+    <button onclick="showSection('backup')">Backup & Restore</button>
 </nav>
 
 <main>
@@ -134,12 +136,9 @@
     <section id="transactions" class="section">
         <h2>Transaction History</h2>
 
-        <input
-            type="text"
-            id="searchTransaction"
+        <input type="text" id="searchTransaction"
             placeholder="Search by transaction name or type"
-            oninput="filterTransactions()"
-        >
+            oninput="filterTransactions()">
 
         <select id="transactionType" onchange="filterTransactions()">
             <option value="all">All Transactions</option>
@@ -149,11 +148,8 @@
         </select>
 
         <label for="transactionDate">Filter by date:</label>
-        <input
-            type="date"
-            id="transactionDate"
-            onchange="filterTransactions()"
-        >
+        <input type="date" id="transactionDate"
+            onchange="filterTransactions()">
 
         <button onclick="clearTransactionFilters()">Clear Filters</button>
 
@@ -185,6 +181,31 @@
         <button onclick="changePin()">Change PIN</button>
 
         <button onclick="lockApp()">Lock PaySmart</button>
+    </section>
+
+    <section id="backup" class="section">
+        <h2>Backup & Restore</h2>
+
+        <div class="backup-card">
+            <h3>📥 Create Backup</h3>
+            <p>Download your PaySmart demo data as a JSON file.</p>
+            <button onclick="downloadBackup()">Download Backup</button>
+        </div>
+
+        <div class="backup-card">
+            <h3>📤 Restore Backup</h3>
+            <p>Select a previously downloaded PaySmart backup file.</p>
+
+            <input type="file" id="restoreFile" accept=".json">
+            <button onclick="restoreBackup()">Restore Data</button>
+        </div>
+
+        <p id="backupMessage"></p>
+
+        <p class="note">
+            Backup files may contain personal profile information.
+            Keep them private. This is a demo application, not a banking service.
+        </p>
     </section>
 
 </main>
