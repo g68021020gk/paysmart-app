@@ -1,68 +1,55 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>PaySmart - My Profile</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaySmart</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <header>
+    <div class="container">
+
         <h1>PaySmart</h1>
-        <p>Smart, Simple and Secure Payments</p>
-    </header>
 
-    <main>
-        <section class="welcome">
-            <h2>Welcome to PaySmart</h2>
-            <p>Manage your demo payments easily.</p>
+        <section class="profile-section">
+
+            <h2>My Profile</h2>
+
+            <div class="profile-icon">👤</div>
+
+            <h3 id="profileName">Gowtham</h3>
+
+            <p id="profileEmail">gowtham@example.com</p>
+
+            <button onclick="editProfile()">Edit Profile</button>
+
         </section>
 
-        <section class="dashboard">
-            <div class="card">
-                <h3>My Wallet</h3>
-                <p id="wallet">₹0.00</p>
-            </div>
+        <div class="form-section" id="editForm">
 
-            <div class="card">
-                <h3>Total Expenses</h3>
-                <p id="expenses">₹0.00</p>
-            </div>
-        </section>
+            <h2>Edit Profile</h2>
 
-        <section class="actions">
-            <button onclick="openScanner()">Scan QR</button>
-            <button onclick="addMoney()">Add Money</button>
-            <button onclick="sendMoney()">Send Money</button>
-            <button onclick="showTransactions()">Transactions</button>
-            <button onclick="showExpenses()">Expense Tracker</button>
-        </section>
+            <input type="text" id="nameInput"
+                placeholder="Enter your name">
 
-        <section id="scannerSection" style="display:none;">
-            <h2>QR Scanner</h2>
-            <div id="reader"></div>
-            <p id="scanResult">Scan a test QR code.</p>
+            <input type="email" id="emailInput"
+                placeholder="Enter your email">
 
-            <h3>QR Scan History</h3>
-            <div id="qrHistory">No QR scans yet.</div>
+            <button onclick="saveProfile()">Save Profile</button>
 
-            <button onclick="stopScanner()">Close Scanner</button>
-        </section>
+            <button onclick="cancelEdit()">Cancel</button>
 
-        <section id="transactionSection">
-            <h2>Transaction History</h2>
-            <div id="transactionList">
-                No transactions yet.
-            </div>
-        </section>
+        </div>
 
-    </main>
+        <button class="back-button" onclick="goBack()">
+            Back to Home
+        </button>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="script.js?v=3"></script>
+    </div>
+
+    <script src="script.js"></script>
 
 </body>
-    </html>
-    
+</html>
