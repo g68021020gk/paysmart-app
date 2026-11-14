@@ -1,273 +1,233 @@
-
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
-    background: #f0f4f8;
+    background: #f2f5fa;
     color: #222;
-    transition: 0.3s;
 }
 
 header {
-    background: #1646a0;
+    background: #172b4d;
     color: white;
-    text-align: center;
-    padding: 22px;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 header h1 {
-    margin-bottom: 8px;
+    margin: 5px;
 }
 
 nav {
-    background: white;
+    background: #244574;
     padding: 12px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
 }
 
 button {
-    background: #1646a0;
+    background: #1769aa;
     color: white;
     border: none;
-    padding: 12px 15px;
-    border-radius: 8px;
+    padding: 11px 15px;
+    border-radius: 7px;
     cursor: pointer;
-    margin: 5px;
+    margin: 5px 2px;
+    font-size: 14px;
 }
 
 button:hover {
-    background: #0d3278;
+    background: #0d4e83;
 }
 
 main {
-    max-width: 750px;
-    margin: 20px auto;
-    padding: 15px;
+    max-width: 1000px;
+    margin: auto;
+    padding: 18px;
 }
 
-.page {
+.section {
+    display: none;
     background: white;
     padding: 22px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-
-.hidden {
-    display: none !important;
-}
-
-h2 {
-    color: #1646a0;
-    margin-bottom: 20px;
-}
-
-h3 {
-    margin: 15px 0;
-}
-
-.balance-card {
-    background: #1646a0;
-    color: white;
-    padding: 25px;
+    margin: 18px 0;
     border-radius: 12px;
-    margin: 20px 0;
+    box-shadow: 0 2px 9px rgba(0,0,0,0.08);
 }
 
-.balance-card h1 {
-    margin-top: 12px;
-    font-size: 30px;
-}
-
-.dashboard {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 20px 0;
-}
-
-.card {
-    background: #e8efff;
-    padding: 20px;
-    border-radius: 10px;
-    margin: 12px 0;
-}
-
-.card p {
-    font-size: 22px;
-    font-weight: bold;
-    color: #1646a0;
-}
-
-.actions {
-    display: flex;
-    flex-wrap: wrap;
+.section.active {
+    display: block;
 }
 
 input, select {
     display: block;
     width: 100%;
-    padding: 13px;
+    padding: 12px;
     margin: 12px 0;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: 7px;
     font-size: 15px;
-    background: white;
-    color: #222;
+}
+
+.balance-card {
+    background: linear-gradient(120deg, #1769aa, #172b4d);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+.balance-card h1 {
+    font-size: 32px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.dashboard-card, .budget-card {
+    background: #eaf2ff;
+    padding: 16px;
+    border-radius: 10px;
+    margin: 12px 0;
+}
+
+.note {
+    color: #9a5b00;
+    font-size: 13px;
 }
 
 ul {
-    list-style: none;
+    padding-left: 20px;
 }
 
 li {
-    background: #f0f4f8;
-    padding: 13px;
-    margin: 10px 0;
-    border-radius: 8px;
+    background: #f0f3f8;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
     overflow-wrap: anywhere;
-}
-
-.profile-icon {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: #e4edff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 60px;
-    margin: 20px auto;
-}
-
-#profile {
-    text-align: center;
-}
-
-#editForm {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f0f4f8;
-    border-radius: 10px;
-    text-align: left;
 }
 
 #reader {
     width: 100%;
-    max-width: 350px;
-    margin: 20px auto;
-}
-
-#qrResult {
-    background: #e8efff;
-    padding: 15px;
-    border-radius: 8px;
-    overflow-wrap: anywhere;
+    max-width: 450px;
+    margin: 15px auto;
 }
 
 .chart-row {
-    margin: 18px 0;
+    margin: 15px 0;
 }
 
 .chart-label {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 7px;
-}
-
-.chart-track {
-    background: #e0e0e0;
-    height: 16px;
-    border-radius: 20px;
-    overflow: hidden;
+    gap: 10px;
 }
 
 .chart-bar {
+    background: #e1e6ee;
+    height: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.chart-fill {
+    background: #1769aa;
     height: 100%;
-    background: #1646a0;
-    border-radius: 20px;
+    border-radius: 10px;
+}
+
+.budget-item {
+    background: #f0f3f8;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #666;
 }
 
 .lock-screen {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: #172b4d;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 20px;
+    align-items: center;
     z-index: 1000;
 }
 
 .lock-box {
     background: white;
-    color: #222;
-    padding: 25px;
-    border-radius: 15px;
-    width: 100%;
+    width: 90%;
     max-width: 350px;
+    padding: 25px;
+    border-radius: 12px;
     text-align: center;
 }
 
+.lock-screen.hidden {
+    display: none;
+}
+
 body.dark {
-    background: #121826;
+    background: #121820;
+    color: #f2f2f2;
+}
+
+body.dark .section {
+    background: #202b38;
     color: white;
 }
 
-body.dark nav,
-body.dark .page {
-    background: #1f2937;
-    color: white;
-}
-
-body.dark h2 {
-    color: #8bb5ff;
-}
-
-body.dark .card,
 body.dark li,
-body.dark #editForm {
-    background: #293548;
+body.dark .dashboard-card,
+body.dark .budget-card,
+body.dark .budget-item {
+    background: #303e50;
     color: white;
 }
 
 body.dark input,
 body.dark select {
-    background: #293548;
+    background: #303e50;
     color: white;
-    border-color: #526078;
+    border-color: #65758b;
 }
 
-body.dark .card p {
-    color: #a9caff;
+body.dark .chart-bar {
+    background: #4a5665;
 }
 
-body.dark .profile-icon {
-    background: #293548;
-}
+@media (max-width: 600px) {
+    header {
+        justify-content: center;
+        text-align: center;
+    }
 
-body.dark .chart-track {
-    background: #465267;
-}
-
-@media (max-width: 450px) {
     nav button {
-        padding: 10px;
-        font-size: 12px;
+        flex: 1 1 28%;
+        padding: 10px 5px;
     }
 
     main {
         padding: 10px;
     }
 
-    .dashboard {
-        grid-template-columns: 1fr;
+    .section {
+        padding: 15px;
     }
 }
